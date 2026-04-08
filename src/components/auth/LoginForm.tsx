@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useLogin } from "@/hooks/useAuth";
 
 const loginSchema = z.object({
-  username: z.string().min(1, "Username is required"),
+  email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
@@ -24,9 +24,9 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit((data) => login(data))} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="username">Email Address</Label>
-        <Input id="username" {...register("username")} disabled={isPending} />
-        {errors.username && <p className="text-sm text-destructive">{errors.username.message}</p>}
+        <Label htmlFor="email">Email Address</Label>
+        <Input id="email" {...register("email")} disabled={isPending} />
+        {errors.email && <p className="text-sm text-destructive">{errors.email.message}</p>}
       </div>
 
       <div className="space-y-2">

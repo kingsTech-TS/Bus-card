@@ -12,17 +12,10 @@ export async function POST() {
   }
 
   try {
-    const formData = new URLSearchParams();
-    // Assuming backend takes the refresh_token in a grant_type=refresh_token flow
-    // NOTE: The exact refresh endpoint depends on backend. Since not explicitly in docs, 
-    // assuming standard OAuth2 refresh.
-    formData.append("grant_type", "refresh_token");
-    formData.append("refresh_token", refreshToken);
-
-    const res = await fetch(`${BASE_URL}/api/v1/auth/login`, {
+    const res = await fetch(`${BASE_URL}/api/v1/auth/refresh`, {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: formData,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refresh_token: refreshToken }),
     });
 
     if (!res.ok) throw new Error("Refresh failed from backend");

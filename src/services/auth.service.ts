@@ -13,13 +13,7 @@ import type {
 
 export const authService = {
   async login(data: LoginRequest): Promise<AuthTokens> {
-    // The backend uses OAuth2 form data for login
-    const formData = new URLSearchParams();
-    formData.append("username", data.username);
-    formData.append("password", data.password);
-    const res = await api.post<AuthTokens>("/auth/login", formData, {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    });
+    const res = await api.post<AuthTokens>("/auth/login/json", data);
     return res.data;
   },
 

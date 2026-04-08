@@ -18,7 +18,7 @@ export default function AdminUsersPage() {
         description="View and promote users across the platform."
       />
 
-      <Card>
+      <Card className="rounded-[2rem] border-0 shadow-soft overflow-hidden">
         <div className="rounded-md border">
           <div className="grid grid-cols-[1fr_2fr_1fr_1fr_1fr] p-4 text-sm font-medium text-muted-foreground border-b bg-muted/50">
             <div>User</div>

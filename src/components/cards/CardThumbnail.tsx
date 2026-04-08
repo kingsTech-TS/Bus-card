@@ -14,7 +14,7 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
   const { mutate: deleteCard } = useDeleteCard();
 
   return (
-    <Card className="group overflow-hidden flex flex-col">
+    <Card className="group flex flex-col rounded-3xl shadow-soft border-0 overflow-hidden">
       <Link href={`/cards/${card.id}`} className="block relative aspect-[1.75] bg-muted w-full flex-1 overflow-hidden">
         {/* Placeholder for actual canvas render */}
         <div 
@@ -28,7 +28,7 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
           </Button>
         </div>
       </Link>
-      <CardFooter className="p-4 flex items-center justify-between bg-card text-card-foreground border-t">
+      <CardFooter className="p-4 flex items-center justify-between bg-card text-card-foreground">
         <div className="overflow-hidden">
           <h3 className="font-semibold truncate">{card.title}</h3>
           <p className="text-xs text-muted-foreground mt-1">Edited {new Date(card.updated_at).toLocaleDateString()}</p>

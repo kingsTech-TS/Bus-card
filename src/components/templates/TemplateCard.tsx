@@ -21,8 +21,8 @@ export function TemplateCard({ template }: TemplateCardProps) {
   };
 
   return (
-    <Card className="flex flex-col group overflow-hidden">
-      <div className="relative aspect-[1.75] bg-muted w-full overflow-hidden flex-shrink-0">
+    <Card className="flex flex-col group rounded-3xl shadow-soft border-0 overflow-hidden">
+      <div className="relative aspect-[1.75] bg-muted w-full overflow-hidden shrink-0">
         <div 
           className="w-full h-full"
           style={{ background: template.design?.background || "#ffffff" }}

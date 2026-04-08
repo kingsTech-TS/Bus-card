@@ -40,7 +40,7 @@ export default function ProfilePage() {
       <PageHeader title="Profile Settings" description="Manage your account details and security." />
 
       <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-        <Card>
+        <Card className="rounded-[2rem] border-0 shadow-soft">
           <CardHeader>
             <CardTitle>Personal Information</CardTitle>
             <CardDescription>Update your public facing details.</CardDescription>
@@ -62,7 +62,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="rounded-[2rem] border-0 shadow-soft">
           <CardHeader>
             <CardTitle>Security</CardTitle>
             <CardDescription>Update your password.</CardDescription>

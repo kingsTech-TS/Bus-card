@@ -17,8 +17,8 @@ export interface AuthTokens {
 }
 
 export interface LoginRequest {
-  full_name?: string;
-  password?: string;
+  username: string; // Mapped from email input for OAuth2 backend compatibility
+  password: string;
 }
 
 export interface SignupRequest {

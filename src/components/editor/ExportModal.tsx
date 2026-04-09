@@ -18,8 +18,7 @@ export function ExportModal({ cardId }: { cardId: string }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* @ts-expect-error React 19 radix typing issue */}
-      <DialogTrigger asChild>
+      <DialogTrigger>
         <Button size="sm">
           <Download className="w-4 h-4 mr-2" />
           Export

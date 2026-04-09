@@ -37,8 +37,7 @@ export function CreateCardModal() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* @ts-expect-error React 19 radix typing issue */}
-      <DialogTrigger asChild>
+      <DialogTrigger>
         <Button>
           <Plus className="w-4 h-4 mr-2" />
           Create Card

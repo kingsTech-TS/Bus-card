@@ -4,6 +4,7 @@ import { Copy, Edit2, MoreVertical, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useDeleteCard } from "@/hooks/useCards";
 
 interface CardThumbnailProps {
@@ -11,6 +12,7 @@ interface CardThumbnailProps {
 }
 
 export function CardThumbnail({ card }: CardThumbnailProps) {
+  const router = useRouter();
   const { mutate: deleteCard } = useDeleteCard();
 
   return (
@@ -34,18 +36,14 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
           <p className="text-xs text-muted-foreground mt-1">Edited {new Date(card.updated_at).toLocaleDateString()}</p>
         </div>
         <DropdownMenu>
-          {/* @ts-expect-error React 19 radix typing issue */}
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger>
             <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 text-muted-foreground hover:text-foreground">
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {/* @ts-expect-error React 19 radix typing issue */}
-            <DropdownMenuItem asChild>
-              <Link href={`/cards/${card.id}`}>
+            <DropdownMenuItem onClick={() => router.push(`/cards/${card.id}`)}>
                 <Edit2 className="w-4 h-4 mr-2" /> Edit
-              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem disabled>
               <Copy className="w-4 h-4 mr-2" /> Duplicate

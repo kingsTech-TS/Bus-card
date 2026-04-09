@@ -225,7 +225,7 @@ export function EditorCanvas() {
         <TooltipProvider>
           <div className="flex items-center gap-1 pr-3 border-r border-zinc-800">
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -239,7 +239,7 @@ export function EditorCanvas() {
             </Tooltip>
             
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger>
                 <Button
                   variant="ghost"
                   size="icon"

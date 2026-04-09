@@ -20,11 +20,11 @@ export function EditorToolbar() {
   const isAdmin = user?.role === "admin";
 
   const { mutate: createTemplate, isPending: isCreatingTemplate } = useMutation({
-    mutationFn: () => templateService.createTemplate({
-      name: title,
-      design: design,
-      category: "General"
-    }),
+     mutationFn: () => templateService.createTemplate({
+       title: title,
+       design: design,
+       category: "General"
+     }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["templates"] });
       toast.success("Design saved as a public template!");

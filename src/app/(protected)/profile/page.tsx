@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useProfile, useUpdateProfile, useChangePassword, useResetAccount, useDeleteAccount } from "@/hooks/useAuth";
+import { useProfile, useUpdateProfile, useChangeUsername, useChangePassword, useResetAccount, useDeleteAccount } from "@/hooks/useAuth";
 import {
   Dialog,
   DialogContent,
@@ -138,10 +138,8 @@ export default function ProfilePage() {
                 <p className="text-sm text-muted-foreground">Clear all your cards, assets and data.</p>
               </div>
               <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" className="text-destructive hover:bg-destructive hover:text-white rounded-xl">
-                    Reset
-                  </Button>
+                <DialogTrigger render={<Button variant="outline" className="text-destructive hover:bg-destructive hover:text-white rounded-xl" />}>
+                  Reset
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>
@@ -166,10 +164,8 @@ export default function ProfilePage() {
                 <p className="text-sm text-muted-foreground">Permanently remove your account and all data.</p>
               </div>
               <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="destructive" className="rounded-xl">
-                    Delete
-                  </Button>
+                <DialogTrigger render={<Button variant="destructive" className="rounded-xl" />}>
+                  Delete
                 </DialogTrigger>
                 <DialogContent>
                   <DialogHeader>

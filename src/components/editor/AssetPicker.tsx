@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface AssetPickerProps {
   onSelect: (url: string) => void;
-  trigger?: React.ReactNode;
+  trigger?: React.ReactElement;
 }
 
 export function AssetPicker({ onSelect, trigger }: AssetPickerProps) {
@@ -35,8 +35,8 @@ export function AssetPicker({ onSelect, trigger }: AssetPickerProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || <Button variant="outline">Select Asset</Button>}
+      <DialogTrigger render={trigger || <Button variant="outline" />}>
+        {trigger ? null : "Select Asset"}
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl h-[80vh] flex flex-col p-0 overflow-hidden rounded-[2rem]">
         <DialogHeader className="p-6 pb-2">

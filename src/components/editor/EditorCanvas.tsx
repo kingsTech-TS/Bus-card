@@ -17,6 +17,7 @@ import {
   Download,
   ChevronLeft,
   Pencil,
+  Sparkles,
   Minus as LineIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,10 @@ import { useEditorStore } from "@/store/editor.store";
 import { useUpdateCard } from "@/hooks/useCards";
 import { EditorToolbox } from "./EditorToolbox";
 import { ExportModal } from "./ExportModal";
+import { useAuthStore } from "@/store/auth.store";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { templateService } from "@/services/template.service";
+import { toast } from "sonner";
 
 // --- Sub-components ---
 
@@ -111,6 +116,23 @@ export function EditorCanvas() {
 
   const { undo, redo, historyIndex, history, cardId, title, design, isDirty, markClean } = useEditorStore();
   const { mutate: updateCard, isPending } = useUpdateCard();
+  const { user } = useAuthStore();
+  const qc = useQueryClient();
+
+  const isAdmin = user?.role === "admin";
+
+  const { mutate: createTemplate, isPending: isCreatingTemplate } = useMutation({
+    mutationFn: () => templateService.createTemplate({
+      title: title,
+      design: design,
+      category: "General"
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["templates"] });
+      toast.success("Design saved as a public template!");
+    },
+    onError: (err: Error) => toast.error(err.message)
+  });
 
   const handleManualSave = () => {
     if (!cardId) return;
@@ -246,6 +268,19 @@ export function EditorCanvas() {
             <Save className="w-3.5 h-3.5 mr-2" />
             {isPending ? "Saving..." : "Save Design"}
           </Button>
+
+          {isAdmin && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-8 px-3 text-[11px] font-bold text-amber-400 hover:bg-amber-500/10"
+              onClick={() => createTemplate()}
+              disabled={isCreatingTemplate}
+            >
+              <Sparkles className="w-3.5 h-3.5 mr-2" />
+              {isCreatingTemplate ? "Saving..." : "Save as Template"}
+            </Button>
+          )}
 
           <ExportModal cardId={cardId!} />
         </div>

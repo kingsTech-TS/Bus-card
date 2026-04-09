@@ -30,7 +30,7 @@ export function Sidebar() {
   if (!sidebarOpen) return null;
 
   return (
-    <aside className="w-[280px] bg-card rounded-3xl shadow-soft border-0 hidden md:flex flex-col h-full overflow-hidden shrink-0 transition-all duration-300">
+    <aside className="w-[280px] bg-card rounded-3xl shadow-soft border-0 flex flex-col h-[calc(100vh-2rem)] md:h-full overflow-hidden shrink-0 transition-all duration-300 fixed md:static inset-y-4 left-4 z-50">
       <div className="p-8 pb-6 flex items-center gap-3">
         {/* Placeholder Logo Icon */}
         <div className="w-8 h-8 rounded-full bg-linear-to-tr from-primary to-accent flex items-center justify-center shrink-0">

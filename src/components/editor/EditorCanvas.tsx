@@ -200,7 +200,7 @@ export function EditorCanvas() {
 
   return (
     <div 
-      className="w-full h-full flex flex-col items-center justify-center bg-muted/30 overflow-auto"
+      className="w-full h-full flex flex-col items-center justify-center bg-transparent overflow-auto"
       ref={containerRef}
     >
       <div 

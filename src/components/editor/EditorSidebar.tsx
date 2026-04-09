@@ -7,84 +7,40 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 
 export function EditorSidebar() {
-  const { design, selectedElementId, addElement, removeElement, reorderElement, setSelectedElement, setBackground, updateElement } = useEditorStore();
-
-  const handleAddText = () => {
-    addElement({
-      type: "text",
-      x: 50,
-      y: 50,
-      width: 300,
-      height: 50,
-      content: "Double click to edit",
-      fontSize: 24,
-      fontFamily: "Inter, sans-serif",
-      fill: "#000000",
-    } as any);
-  };
-
-  const handleAddShape = () => {
-    addElement({
-      type: "shape",
-      shapeType: "rect",
-      x: 100,
-      y: 100,
-      width: 100,
-      height: 100,
-      fill: "#cccccc",
-    } as any);
-  };
+  const { design, selectedElementId, removeElement, reorderElement, setSelectedElement, setBackground, updateElement } = useEditorStore();
 
   const selectedElement = design.elements.find(e => e.id === selectedElementId);
 
   return (
-    <aside className="w-80 border-l bg-card flex flex-col shrink-0">
-      <Tabs defaultValue="add" className="flex-1 flex flex-col">
+    <aside className="w-80 bg-card rounded-[2rem] shadow-soft border-0 flex flex-col shrink-0 overflow-hidden h-[calc(100vh-140px)]">
+      <Tabs defaultValue="layers" className="flex-1 flex flex-col">
         <TabsList className="w-full justify-start rounded-none border-b h-12 bg-transparent p-0">
-          <TabsTrigger value="add" className="flex-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary shadow-none">Add</TabsTrigger>
           <TabsTrigger value="layers" className="flex-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary shadow-none">Layers</TabsTrigger>
           <TabsTrigger value="edit" className="flex-1 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary shadow-none" disabled={!selectedElement}>Edit</TabsTrigger>
         </TabsList>
 
         <div className="flex-1 overflow-auto p-4">
-          <TabsContent value="add" className="mt-0 space-y-6">
-            <div className="space-y-3">
-              <h3 className="font-medium text-sm">Background</h3>
+
+
+          <TabsContent value="layers" className="mt-0 space-y-2">
+            <div className="space-y-3 p-2 bg-muted/30 rounded-xl mb-4">
+              <h3 className="font-medium text-xs px-2 text-muted-foreground uppercase tracking-widest">Background</h3>
               <div className="flex items-center gap-2">
                 <Input 
                   type="color" 
                   value={design.background || "#ffffff"} 
                   onChange={(e) => setBackground(e.target.value)}
-                  className="w-12 h-12 p-1 cursor-pointer"
+                  className="w-10 h-10 p-0 cursor-pointer rounded-full overflow-hidden border-0 shadow-sm shrink-0"
                 />
                 <Input 
                   value={design.background || "#ffffff"} 
                   onChange={(e) => setBackground(e.target.value)}
-                  className="flex-1 font-mono uppercase"
+                  className="flex-1 font-mono uppercase bg-card border-0 shadow-sm"
                 />
               </div>
             </div>
-
-            <div className="space-y-3">
-              <h3 className="font-medium text-sm">Elements</h3>
-              <div className="grid grid-cols-2 gap-2">
-                <Button variant="outline" className="h-20 flex flex-col gap-2" onClick={handleAddText}>
-                  <Type className="w-6 h-6" />
-                  <span>Text</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2" onClick={handleAddShape}>
-                  <Square className="w-6 h-6" />
-                  <span>Shape</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex flex-col gap-2 disabled:opacity-50">
-                  <ImageIcon className="w-6 h-6" />
-                  <span>Image</span>
-                </Button>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="layers" className="mt-0 space-y-2">
+            
+            <h3 className="font-medium text-xs px-2 mb-2 text-muted-foreground uppercase tracking-widest pt-2">Canvas Layers</h3>
             {[...design.elements].reverse().map((el, i) => (
               <div 
                 key={el.id} 

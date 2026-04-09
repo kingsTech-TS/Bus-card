@@ -23,14 +23,14 @@ export function EditorToolbar() {
   const canRedo = historyIndex < history.length - 1;
 
   return (
-    <div className="flex items-center justify-between h-14 border-b bg-card px-4 shrink-0">
+    <div className="flex flex-wrap items-center justify-between h-14 bg-card/95 backdrop-blur-md px-6 rounded-full shadow-soft border-0 shrink-0 gap-6">
       <div className="flex items-center gap-4">
         <Input 
           value={title} 
           onChange={(e) => setTitle(e.target.value)}
-          className="w-64 font-semibold border-transparent hover:border-input focus-visible:ring-1 bg-transparent"
+          className="w-48 font-semibold border-transparent hover:border-input focus-visible:ring-1 bg-transparent h-8"
         />
-        {isDirty && <span className="text-xs text-muted-foreground flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" /> Unsaved changes</span>}
+        {isDirty && <span className="text-xs text-muted-foreground flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" /> Unsaved</span>}
       </div>
 
       <div className="flex items-center gap-2">

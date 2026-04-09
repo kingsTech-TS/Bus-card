@@ -24,8 +24,8 @@ export function TopNav() {
   return (
     <header className="flex h-16 shrink-0 items-center justify-between mb-6 mt-2 relative z-50">
       <div className="flex items-center gap-4">
-        {/* Mobile menu toggle */}
-        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="md:hidden bg-card shadow-soft rounded-full">
+        {/* Sidebar toggle */}
+        <Button variant="ghost" size="icon" onClick={toggleSidebar} className="bg-card shadow-soft rounded-full">
           <Menu className="h-5 w-5 text-muted-foreground" />
         </Button>
         {/* Fake Search bar from mock */}

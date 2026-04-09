@@ -5,11 +5,32 @@ import { Input } from "@/components/ui/input";
 import { Undo2, Redo2, Download, Save, Sparkles } from "lucide-react";
 import { useUpdateCard } from "@/hooks/useCards";
 import { ExportModal } from "./ExportModal";
+import { useAuthStore } from "@/store/auth.store";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { templateService } from "@/services/template.service";
+import { toast } from "sonner";
 
 
 export function EditorToolbar() {
   const { cardId, title, design, setTitle, undo, redo, historyIndex, history, isDirty, markClean } = useEditorStore();
   const { mutate: updateCard, isPending } = useUpdateCard();
+  const { user } = useAuthStore();
+  const qc = useQueryClient();
+
+  const isAdmin = user?.role === "admin";
+
+  const { mutate: createTemplate, isPending: isCreatingTemplate } = useMutation({
+    mutationFn: () => templateService.createTemplate({
+      name: title,
+      design: design,
+      category: "General"
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["templates"] });
+      toast.success("Design saved as a public template!");
+    },
+    onError: (err: Error) => toast.error(err.message)
+  });
 
   const handleManualSave = () => {
     if (!cardId) return;
@@ -47,6 +68,13 @@ export function EditorToolbar() {
           <Save className="w-4 h-4 mr-2" />
           {isPending ? "Saving..." : "Save"}
         </Button>
+
+        {isAdmin && (
+          <Button variant="outline" size="sm" onClick={() => createTemplate()} disabled={isCreatingTemplate}>
+            <Sparkles className="w-4 h-4 mr-2" />
+            {isCreatingTemplate ? "Saving..." : "Save as Template"}
+          </Button>
+        )}
 
         <Button variant="secondary" size="sm" className="bg-blue-500/10 text-blue-500 hover:bg-blue-500/20 hover:text-blue-600 border-none">
           <Sparkles className="w-4 h-4 mr-2" />

@@ -53,6 +53,10 @@ export const authService = {
     await api.post("/auth/reset-password", data);
   },
 
+  async resetAccount(): Promise<void> {
+    await api.post("/auth/reset-account");
+  },
+
   async deleteAccount(): Promise<void> {
     await api.delete("/auth/delete-account");
   },

@@ -1,14 +1,16 @@
 "use client";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { useAdminStats, useActivityLogs } from "@/hooks/useAdmin";
+import { useAdminStats, useActivityLogs, useAdminAnalytics, useClearCache } from "@/hooks/useAdmin";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Users, FileImage, Eye, Download, ShieldCheck, Activity } from "lucide-react";
+import { Users, FileImage, Eye, Download, ShieldCheck, Activity, BarChart3, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export default function AdminDashboardPage() {
   const { data: stats } = useAdminStats();
   const { data: logs } = useActivityLogs();
+  const { data: analytics } = useAdminAnalytics();
+  const { mutate: clearCache, isPending: clearing } = useClearCache();
 
   return (
     <div className="animate-in slide-in-from-bottom-4 duration-500">
@@ -108,6 +110,19 @@ export default function AdminDashboardPage() {
               <Button variant="secondary" className="w-full justify-start">Manage Users</Button>
             </Link>
             <Button variant="secondary" className="w-full justify-start">Promote New Admin</Button>
+            <Button 
+              variant="secondary" 
+              className="w-full justify-start text-destructive hover:text-destructive"
+              onClick={() => {
+                if(confirm("Clear system cache? This might affect performance temporarily.")) {
+                  clearCache();
+                }
+              }}
+              disabled={clearing}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Clear System Cache
+            </Button>
             <Button variant="secondary" className="w-full justify-start">Platform Settings</Button>
           </CardContent>
         </Card>

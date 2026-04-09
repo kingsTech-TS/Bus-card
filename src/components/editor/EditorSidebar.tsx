@@ -2,12 +2,14 @@
 import { useEditorStore } from "@/store/editor.store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Type, Image as ImageIcon, Square, Layers, Trash2, ArrowUp, ArrowDown } from "lucide-react";
+import { Type, Image as ImageIcon, Square, Layers, Trash2, ArrowUp, ArrowDown, Wand2, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { useImproveText } from "@/hooks/useAI";
 
 export function EditorSidebar() {
   const { design, selectedElementId, removeElement, reorderElement, setSelectedElement, setBackground, updateElement } = useEditorStore();
+  const { mutate: improveText, isPending: isImproving } = useImproveText();
 
   const selectedElement = design.elements.find(e => e.id === selectedElementId);
 
@@ -96,7 +98,24 @@ export function EditorSidebar() {
                 {selectedElement.type === "text" && (
                   <div className="space-y-4 pt-4 border-t">
                     <div className="space-y-2">
-                      <Label>Text</Label>
+                      <div className="flex items-center justify-between">
+                        <Label>Text Content</Label>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 text-[10px] text-primary hover:text-primary hover:bg-primary/10"
+                          disabled={isImproving}
+                          onClick={() => {
+                            const el = selectedElement as any;
+                            improveText({ text: el.content, tone: "professional" }, {
+                              onSuccess: (data) => updateElement(el.id, { content: data.improved_text })
+                            });
+                          }}
+                        >
+                          {isImproving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Wand2 className="w-3 h-3 mr-1" />}
+                          AI Improve
+                        </Button>
+                      </div>
                       <Input value={(selectedElement as any).content} onChange={(e) => updateElement(selectedElement.id, { content: e.target.value })} />
                     </div>
                     <div className="space-y-2">
@@ -117,6 +136,22 @@ export function EditorSidebar() {
                   <div className="space-y-4 pt-4 border-t">
                     <div className="space-y-2">
                       <Label>Fill Color</Label>
+                      <div className="flex items-center gap-2">
+                        <Input type="color" value={(selectedElement as any).fill} onChange={(e) => updateElement(selectedElement.id, { fill: e.target.value })} className="w-12 h-12 p-1" />
+                        <Input value={(selectedElement as any).fill} onChange={(e) => updateElement(selectedElement.id, { fill: e.target.value })} className="flex-1 font-mono uppercase" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedElement.type === "qr" && (
+                  <div className="space-y-4 pt-4 border-t">
+                    <div className="space-y-2">
+                      <Label>QR Data</Label>
+                      <Input value={(selectedElement as any).data} onChange={(e) => updateElement(selectedElement.id, { data: e.target.value })} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>QR Color</Label>
                       <div className="flex items-center gap-2">
                         <Input type="color" value={(selectedElement as any).fill} onChange={(e) => updateElement(selectedElement.id, { fill: e.target.value })} className="w-12 h-12 p-1" />
                         <Input value={(selectedElement as any).fill} onChange={(e) => updateElement(selectedElement.id, { fill: e.target.value })} className="flex-1 font-mono uppercase" />

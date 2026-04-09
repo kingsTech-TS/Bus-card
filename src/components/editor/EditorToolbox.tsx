@@ -2,8 +2,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useEditorStore } from "@/store/editor.store";
 import { Button } from "@/components/ui/button";
-import { Type, Image as ImageIcon, Square, MousePointer2, Pencil, Slash, GripVertical } from "lucide-react";
+import { Type, Image as ImageIcon, Square, MousePointer2, Pencil, Slash, GripVertical, QrCode } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AssetPicker } from "./AssetPicker";
 
 export function EditorToolbox() {
   const { addElement } = useEditorStore();
@@ -105,6 +106,29 @@ export function EditorToolbox() {
     } as any);
   };
 
+  const handleAddQR = () => {
+    addElement({
+      type: "qr",
+      x: 100,
+      y: 100,
+      width: 100,
+      height: 100,
+      data: "https://example.com",
+      fill: "#000000",
+    } as any);
+  };
+
+  const handleAddImage = (url: string) => {
+    addElement({
+      type: "image",
+      x: 50,
+      y: 50,
+      width: 150,
+      height: 150,
+      url,
+    } as any);
+  };
+
   return (
     <div 
       className={cn(
@@ -147,9 +171,18 @@ export function EditorToolbox() {
           <Pencil className="w-4.5 h-4.5" />
         </Button>
         
-        <Button variant="ghost" size="icon" className="w-10 h-10 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg opacity-50 cursor-not-allowed" title="Add Image">
-          <ImageIcon className="w-4.5 h-4.5" />
+        <Button variant="ghost" size="icon" className="w-10 h-10 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg" onClick={handleAddQR} title="Add QR Code">
+          <QrCode className="w-4.5 h-4.5" />
         </Button>
+
+        <AssetPicker 
+          onSelect={handleAddImage}
+          trigger={
+            <Button variant="ghost" size="icon" className="w-10 h-10 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 rounded-lg" title="Add Image">
+              <ImageIcon className="w-4.5 h-4.5" />
+            </Button>
+          }
+        />
       </div>
     </div>
   );

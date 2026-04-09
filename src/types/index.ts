@@ -72,10 +72,9 @@ export interface TextElement extends BaseElement {
   content: string;
   fontSize: number;
   fontFamily: string;
-  fontStyle?: string;
-  fontWeight?: string;
   fill: string;
-  textAlign?: "left" | "center" | "right";
+  fontWeight?: string;
+  textAlign?: string;
 }
 
 export interface ImageElement extends BaseElement {
@@ -85,17 +84,14 @@ export interface ImageElement extends BaseElement {
 
 export interface ShapeElement extends BaseElement {
   type: "shape";
-  shapeType: "rect" | "circle" | "line";
+  shapeType: string;
   fill?: string;
-  stroke?: string;
-  strokeWidth?: number;
 }
 
 export interface QRElement extends BaseElement {
   type: "qr";
-  value: string;
-  foreground?: string;
-  background?: string;
+  data: string;
+  fill?: string;
 }
 
 export type DesignElement = TextElement | ImageElement | ShapeElement | QRElement;
@@ -106,6 +102,10 @@ export interface DesignSchema {
   dpi?: number;
   background?: string;
   elements: DesignElement[];
+  brand_kit?: {
+    colors: string[];
+    font_id?: string | null;
+  };
 }
 
 export interface Card {

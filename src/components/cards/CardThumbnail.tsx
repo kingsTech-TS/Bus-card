@@ -21,7 +21,9 @@ export function CardThumbnail({ card }: CardThumbnailProps) {
         {/* Placeholder for actual canvas render */}
         <div 
           className="w-full h-full"
-          style={{ background: card.design?.background || "#ffffff" }}
+          style={{ 
+            background: card.design?.background || card.design?.brand_kit?.colors?.[0] || "#ffffff" 
+          }}
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
           <Button variant="secondary" className="opacity-0 group-hover:opacity-100 transition-opacity">

@@ -1,6 +1,7 @@
 "use client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { templateService } from "@/services/template.service";
+import { toast } from "sonner";
 
 export function useTemplates(params?: { category?: string; tag?: string }) {
   return useQuery({
@@ -24,5 +25,17 @@ export function useTemplate(id: string) {
     queryKey: ["templates", id],
     queryFn: () => templateService.getTemplate(id),
     enabled: !!id,
+  });
+}
+
+export function useDeleteTemplate() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: templateService.deleteTemplate,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["templates"] });
+      toast.success("Template deleted.");
+    },
+    onError: (err: Error) => toast.error(err.message),
   });
 }

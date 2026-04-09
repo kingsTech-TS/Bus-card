@@ -22,7 +22,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useEditorStore } from "@/store/editor.store";
+import { useUpdateCard } from "@/hooks/useCards";
 import { EditorToolbox } from "./EditorToolbox";
+import { ExportModal } from "./ExportModal";
 
 // --- Sub-components ---
 
@@ -105,6 +108,20 @@ export function EditorCanvas() {
   const [zoom, setZoom] = useState(1.2);
   const [showGuides, setShowGuides] = useState(true);
   const [showGrid, setShowGrid] = useState(false);
+
+  const { undo, redo, historyIndex, history, cardId, title, design, isDirty, markClean } = useEditorStore();
+  const { mutate: updateCard, isPending } = useUpdateCard();
+
+  const handleManualSave = () => {
+    if (!cardId) return;
+    updateCard(
+      { id: cardId, data: { title, design } },
+      { onSuccess: () => markClean() }
+    );
+  };
+
+  const canUndo = historyIndex > 0;
+  const canRedo = historyIndex < history.length - 1;
 
   // Business Card Base Dimensions (96 DPI)
   const baseWidth = 336; // 3.5"
@@ -198,22 +215,39 @@ export function EditorCanvas() {
         >
           <ChevronLeft className="w-5 h-5" />
         </Button>
+
         <div className="flex items-center gap-1 p-1 bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-lg shadow-2xl">
-          <Button variant="ghost" size="icon" className="w-8 h-8 text-zinc-400 hover:text-white">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="w-8 h-8 text-zinc-400 hover:text-white"
+            onClick={undo}
+            disabled={!canUndo}
+          >
             <Undo2 className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="icon" className="w-8 h-8 text-zinc-400 hover:text-white">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="w-8 h-8 text-zinc-400 hover:text-white"
+            onClick={redo}
+            disabled={!canRedo}
+          >
             <Redo2 className="w-4 h-4" />
           </Button>
           <div className="w-[1px] h-4 bg-zinc-800 mx-1" />
-          <Button variant="ghost" size="sm" className="h-8 px-3 text-[11px] font-bold text-indigo-400 hover:bg-indigo-500/10">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 px-3 text-[11px] font-bold text-indigo-400 hover:bg-indigo-500/10"
+            onClick={handleManualSave}
+            disabled={!isDirty || isPending || !cardId}
+          >
             <Save className="w-3.5 h-3.5 mr-2" />
-            Save Design
+            {isPending ? "Saving..." : "Save Design"}
           </Button>
-          <Button variant="ghost" size="sm" className="h-8 px-3 text-[11px] font-bold text-zinc-300 hover:bg-zinc-800">
-            <Download className="w-3.5 h-3.5 mr-2" />
-            Export
-          </Button>
+
+          <ExportModal cardId={cardId!} />
         </div>
       </div>
 

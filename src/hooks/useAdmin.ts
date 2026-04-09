@@ -35,3 +35,18 @@ export function useActivityLogs() {
     queryFn: adminService.getActivityLogs,
   });
 }
+
+export function useAdminAnalytics() {
+  return useQuery({
+    queryKey: ["admin", "analytics"],
+    queryFn: adminService.getAdminAnalytics,
+  });
+}
+
+export function useClearCache() {
+  return useMutation({
+    mutationFn: adminService.clearCache,
+    onSuccess: () => toast.success("System cache cleared."),
+    onError: (err: Error) => toast.error(err.message),
+  });
+}

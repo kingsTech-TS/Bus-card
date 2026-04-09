@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLogin } from "@/hooks/useAuth";
+import Link from "next/link";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -30,7 +31,15 @@ export function LoginForm() {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="password">Password</Label>
+          <Link 
+            href="/forgot-password" 
+            className="text-sm font-medium text-primary hover:underline"
+          >
+            Forgot Password?
+          </Link>
+        </div>
         <Input id="password" type="password" {...register("password")} disabled={isPending} />
         {errors.password && <p className="text-sm text-destructive">{errors.password.message}</p>}
       </div>

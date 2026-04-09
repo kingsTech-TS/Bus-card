@@ -148,3 +148,17 @@ export function useDeleteAccount() {
     onError: (err: Error) => toast.error(err.message),
   });
 }
+
+export function useResetAccount() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: authService.resetAccount,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["cards"] });
+      qc.invalidateQueries({ queryKey: ["templates"] });
+      qc.invalidateQueries({ queryKey: ["assets"] });
+      toast.success("Account reset! All your data has been cleared.");
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}

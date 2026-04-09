@@ -25,4 +25,8 @@ export const adminService = {
     const res = await api.get("/admin/analytics");
     return res.data;
   },
+
+  async clearCache(): Promise<void> {
+    await api.post("/admin/maintenance/clear-cache");
+  },
 };

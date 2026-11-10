@@ -1,6 +1,9 @@
 "use client";
+import { useState } from "react";
 import { CopyPlus, Eye, Loader2, Trash2 } from "lucide-react";
-import type { Template } from "@/types";
+import type { CardSide, Template } from "@/types";
+import { cn } from "@/lib/utils";
+import { hasBackContent } from "@/lib/editor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DesignPreview } from "@/components/design/DesignPreview";
@@ -18,6 +21,8 @@ export function TemplateCard({ template, onPreview, onUse, isCreating }: Templat
   const isAdmin = useAuthStore((s) => s.user?.role === "admin");
   const { mutate: deleteTemplate, isPending: isDeleting } = useDeleteTemplate();
   const isCustom = template.source === "custom";
+  const doubleSided = hasBackContent(template.design);
+  const [side, setSide] = useState<CardSide>("front");
 
   return (
     <div className="group flex flex-col gap-3">
@@ -28,7 +33,7 @@ export function TemplateCard({ template, onPreview, onUse, isCreating }: Templat
           className="block w-full text-left"
           aria-label={`Preview ${template.title}`}
         >
-          <DesignPreview design={template.design} />
+          <DesignPreview design={template.design} side={side} />
         </button>
 
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center gap-2 bg-black/45 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
@@ -66,6 +71,26 @@ export function TemplateCard({ template, onPreview, onUse, isCreating }: Templat
           <h3 className="truncate text-sm font-semibold">{template.title}</h3>
           {template.category && <p className="text-xs text-muted-foreground">{template.category}</p>}
         </div>
+        {doubleSided && (
+          <div className="flex shrink-0 rounded-lg bg-muted p-0.5 text-[11px] font-medium" role="tablist" aria-label="Card side">
+            {(["front", "back"] as CardSide[]).map((s) => (
+              <button
+                key={s}
+                type="button"
+                role="tab"
+                aria-selected={side === s}
+                onClick={() => setSide(s)}
+                onMouseEnter={() => setSide(s)}
+                className={cn(
+                  "rounded-md px-2 py-0.5 capitalize text-muted-foreground transition-colors",
+                  side === s && "bg-background text-foreground shadow-sm"
+                )}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

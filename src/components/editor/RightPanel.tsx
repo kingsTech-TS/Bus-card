@@ -7,7 +7,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useEditorStore, selectSelectedElement } from "@/store/editor.store";
 import { useImproveText } from "@/hooks/useAI";
-import { FONT_FAMILIES, SHAPES, elementLabel, fontStyleOf } from "@/lib/editor";
+import { FONT_FAMILIES, SHAPES, elementLabel, fontStyleOf, getSide } from "@/lib/editor";
 import type { DesignElement, ElementPatch } from "@/types";
 import { ColorField, IconToggle, NumberField, PanelSection } from "./fields";
 
@@ -24,6 +24,8 @@ const PX_PER_INCH = 300;
 
 function CardSettings() {
   const design = useEditorStore((s) => s.design);
+  const side = useEditorStore((s) => s.side);
+  const { background } = getSide(design, side);
   const showGuides = useEditorStore((s) => s.showGuides);
   const showGrid = useEditorStore((s) => s.showGrid);
   const { setBackground, toggleGuides, toggleGrid } = useEditorStore.getState();
@@ -43,8 +45,19 @@ function CardSettings() {
           </div>
         </dl>
       </PanelSection>
-      <PanelSection title="Background">
-        <ColorField value={design.background ?? "#ffffff"} onChange={setBackground} extraSwatches={design.brand_kit?.colors} />
+      <PanelSection
+        title={`${side === "front" ? "Front" : "Back"} background`}
+        action={
+          <button
+            type="button"
+            onClick={() => setBackground(getSide(design, side === "front" ? "back" : "front").background)}
+            className="rounded-md px-1.5 py-0.5 text-[11px] font-medium text-primary hover:bg-primary/10"
+          >
+            Match {side === "front" ? "back" : "front"}
+          </button>
+        }
+      >
+        <ColorField value={background} onChange={setBackground} extraSwatches={design.brand_kit?.colors} />
       </PanelSection>
       <PanelSection title="View">
         <label className="flex items-center justify-between text-sm">
@@ -250,7 +263,9 @@ function ElementSettings({ el }: { el: DesignElement }) {
 }
 
 function LayersList() {
-  const elements = useEditorStore((s) => s.design.elements);
+  const design = useEditorStore((s) => s.design);
+  const side = useEditorStore((s) => s.side);
+  const { elements } = getSide(design, side);
   const selectedId = useEditorStore((s) => s.selectedId);
   const { select, toggleLock, toggleVisibility, moveLayer } = useEditorStore.getState();
 
@@ -305,7 +320,7 @@ function LayersList() {
 export function RightPanel() {
   const [tab, setTab] = useState<"design" | "layers">("design");
   const selected = useEditorStore(selectSelectedElement);
-  const count = useEditorStore((s) => s.design.elements.length);
+  const count = useEditorStore((s) => getSide(s.design, s.side).elements.length);
 
   return (
     <aside className="flex h-full w-72 shrink-0 flex-col border-l border-border bg-card">

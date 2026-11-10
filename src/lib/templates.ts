@@ -55,16 +55,157 @@ function qr(value: string, x: number, y: number, size: number, fill = "#000000")
   return { type: "qr", value, data: "", x, y, width: size, height: size, fill } as El;
 }
 
+function withIds(prefix: string, elements: El[]): DesignElement[] {
+  return elements.map((el, i) => ({ ...el, id: `${prefix}-${i}`, zIndex: i, isVisible: true, isLocked: false }) as DesignElement);
+}
+
 function design(slug: string, background: string, elements: El[]): DesignSchema {
+  const back = BACKS[slug];
   return {
     width: W,
     height: H,
     dpi: 300,
     background,
     bleed_area: DEFAULT_BLEED,
-    elements: elements.map((el, i) => ({ ...el, id: `${slug}-${i}`, zIndex: i, isVisible: true, isLocked: false }) as DesignElement),
+    elements: withIds(slug, elements),
+    back: back ? { background: back[0], elements: withIds(`${slug}-back`, back[1]) } : { background: "#ffffff", elements: [] },
   };
 }
+
+/** Back side of each template: [background, elements]. */
+const BACKS: Record<string, [string, El[]]> = {
+  "classic-corporate": ["#1e3a8a", [
+    center("NORTHWIND", 220, 72, { font: "Montserrat", weight: "bold", fill: "#ffffff" }),
+    rect(475, 320, 100, 5, "#93c5fd"),
+    center("Logistics that move the world", 350, 26, { fill: "#bfdbfe" }),
+    center("northwind.co", 490, 22, { fill: "#93c5fd" }),
+  ]],
+  "consultant-split": ["#0f766e", [
+    center("CLEARPATH", 220, 68, { font: "Poppins", weight: "bold", fill: "#ffffff" }),
+    center("Strategy · Operations · Growth", 315, 26, { fill: "#99f6e4" }),
+  ]],
+  "legal-trust": ["#1c1917", [
+    shape("diamond", 495, 150, 60, 60, "#c8a24a"),
+    center("HALE & PARTNERS", 250, 52, { font: "Georgia", fill: "#c8a24a" }),
+    center("ATTORNEYS AT LAW  ·  EST. 1987", 330, 22, { fill: "#a8a29e" }),
+  ]],
+  "architect-lines": ["#171717", [
+    rect(80, 80, 890, 2, "#fafafa"),
+    rect(80, 518, 890, 2, "#fafafa"),
+    center("HL", 170, 140, { font: "Montserrat", fill: "#fafafa" }),
+    center("LINDQVIST STUDIO", 370, 26, { font: "Montserrat", weight: "bold", fill: "#a3a3a3" }),
+  ]],
+  "minimal-white": ["#111827", [
+    circle(495, 210, 60, "#ffffff"),
+    center("chen.design", 310, 30, { fill: "#ffffff" }),
+  ]],
+  "swiss-red": ["#dc2626", [
+    text("Weber\nDesign", 80, 110, 120, { font: "Oswald", weight: "bold", fill: "#ffffff", width: 900 }),
+    text("weber.ch", 80, 480, 26, { fill: "#fee2e2" }),
+  ]],
+  "noir-centered": ["#ffffff", [
+    center("JC", 170, 150, { font: "Montserrat", weight: "bold", fill: "#000000" }),
+    center("Words that sell.", 380, 30, { weight: "italic", fill: "#404040" }),
+  ]],
+  "soft-sand": ["#44403c", [
+    center("CLAYHOUSE", 220, 60, { font: "Lora", fill: "#f3ede4" }),
+    center("handmade ceramics", 305, 26, { font: "Lora", weight: "italic", fill: "#d6d3d1" }),
+  ]],
+  "tech-orbit": ["#6366f1", [
+    circle(-120, 320, 420, "#22d3ee", { opacity: 0.55 }),
+    circle(850, -80, 260, "#0f172a", { opacity: 0.35 }),
+    center("</>", 150, 130, { font: "Courier New", weight: "bold", fill: "#ffffff" }),
+    center("devstack.io", 380, 34, { font: "Poppins", weight: "bold", fill: "#ffffff" }),
+  ]],
+  "terminal": ["#0b0f14", [
+    center("$ ssh sam@cloudops.dev", 110, 34, { font: "Courier New", fill: "#22c55e" }),
+    center("// scan to connect", 175, 22, { font: "Courier New", fill: "#6b7280" }),
+    qr("https://cloudops.dev", 440, 260, 170, "#14532d"),
+  ]],
+  "startup-violet": ["#7c3aed", [
+    shape("star", 475, 120, 100, 100, "#ffffff"),
+    center("NovaLabs", 250, 68, { font: "Poppins", weight: "bold", fill: "#ffffff" }),
+    center("Building the future of AI tooling", 345, 26, { fill: "#ddd6fe" }),
+  ]],
+  "data-bars": ["#0b1120", [
+    rect(395, 150, 40, 80, "#0ea5e9", { opacity: 0.6 }),
+    rect(455, 120, 40, 110, "#0ea5e9", { opacity: 0.8 }),
+    rect(515, 90, 40, 140, "#38bdf8"),
+    rect(575, 130, 40, 100, "#0ea5e9", { opacity: 0.7 }),
+    center("insightful.ai", 280, 58, { font: "Roboto", weight: "bold", fill: "#38bdf8" }),
+    center("Turning data into decisions", 360, 26, { fill: "#94a3b8" }),
+  ]],
+  "creative-pop": ["#ec4899", [
+    circle(-90, -90, 320, "#fde047"),
+    shape("star", 820, 370, 190, 190, "#fde047"),
+    center("RUBY ALVAREZ", 230, 68, { font: "Poppins", weight: "bold", fill: "#ffffff" }),
+    center("Let’s make walls talk.", 325, 28, { fill: "#ffffff" }),
+  ]],
+  "studio-mono": ["#f43f5e", [
+    center("OTTO BRANDT", 210, 92, { font: "Oswald", weight: "bold", fill: "#18181b" }),
+    center("PHOTOGRAPHY", 340, 28, { weight: "bold", fill: "#18181b" }),
+  ]],
+  "pastel-play": ["#c4b5fd", [
+    circle(-60, -60, 220, "#fbcfe8"),
+    circle(880, 420, 220, "#a7f3d0"),
+    shape("star", 840, 80, 80, 80, "#fcd34d"),
+    center("Little Painters Club", 230, 60, { font: "Poppins", weight: "bold", fill: "#4c1d95" }),
+    center("Creativity starts here!", 315, 28, { fill: "#5b21b6" }),
+  ]],
+  "midnight-executive": ["#d4af37", [
+    center("GC", 160, 150, { font: "Playfair Display", fill: "#0b0f19" }),
+    center("GRANT CAPITAL", 370, 30, { weight: "bold", fill: "#0b0f19" }),
+  ]],
+  "black-marble": ["#d4af37", [
+    center("Valentina Rossi", 220, 68, { font: "Playfair Display", weight: "italic", fill: "#111111" }),
+    center("FINE JEWELRY  ·  MILANO", 320, 24, { weight: "bold", fill: "#111111" }),
+  ]],
+  "elegant-serif": ["#a16207", [
+    center("Moreau Interiors", 220, 64, { font: "Playfair Display", weight: "italic", fill: "#faf7f2" }),
+    center("Paris · London · New York", 315, 24, { font: "Lora", fill: "#fef3c7" }),
+  ]],
+  "rose-boutique": ["#9d174d", [
+    circle(-110, 380, 320, "#be185d"),
+    circle(860, -100, 300, "#be185d"),
+    center("Bloom & Co.", 210, 74, { font: "Playfair Display", weight: "bold", fill: "#fce7f3" }),
+    center("Flowers for every story", 315, 26, { fill: "#fbcfe8" }),
+  ]],
+  "bold-statement": ["#facc15", [
+    center("ROSS BRANDS", 200, 100, { font: "Oswald", weight: "bold", fill: "#111827" }),
+    center("Strategy that stands out.", 340, 30, { weight: "bold", fill: "#111827" }),
+  ]],
+  "fitness-energy": ["#111111", [
+    center("TRAIN HARD.\nLIVE STRONG.", 150, 84, { font: "Oswald", weight: "bold", fill: "#ffffff" }),
+    center("@coachdre.fit", 420, 30, { weight: "bold", fill: "#dc2626" }),
+  ]],
+  "real-estate-pro": ["#065f46", [
+    center("HOMESTEAD REALTY", 110, 46, { font: "Montserrat", weight: "bold", fill: "#ffffff" }),
+    center("Scan to view my listings", 180, 24, { fill: "#a7f3d0" }),
+    qr("https://homesteadrealty.com/marcus", 440, 260, 170, "#065f46"),
+  ]],
+  "health-clinic": ["#0284c7", [
+    rect(503, 110, 44, 150, "#ffffff"),
+    rect(450, 163, 150, 44, "#ffffff"),
+    center("Riverside Family Clinic", 320, 46, { font: "Poppins", weight: "bold", fill: "#ffffff" }),
+    center("Caring for families since 1998", 395, 24, { fill: "#e0f2fe" }),
+  ]],
+  "daily-grind": ["#fbbf24", [
+    center("Buy 9 coffees, get the 10th free", 90, 36, { font: "Playfair Display", weight: "bold", fill: "#3f2a1d" }),
+    ...Array.from({ length: 10 }, (_, i) => circle(245 + (i % 5) * 120, i < 5 ? 210 : 330, 80, "#fef3c7")),
+    center("The Daily Grind", 480, 24, { weight: "bold", fill: "#3f2a1d" }),
+  ]],
+  "green-leaf": ["#14532d", [
+    shape("hexagon", 60, 400, 140, 140, "#22c55e", { opacity: 0.6 }),
+    shape("hexagon", 860, 50, 140, 140, "#86efac", { opacity: 0.5 }),
+    center("GreenLeaf", 220, 70, { font: "Montserrat", weight: "bold", fill: "#f0fdf4" }),
+    center("Landscaping & Garden Design", 315, 26, { fill: "#86efac" }),
+  ]],
+  "serene-yoga": ["#0891b2", [
+    circle(475, 100, 100, "#a5f3fc"),
+    center("Serene Space", 250, 60, { font: "Lora", fill: "#ecfeff" }),
+    center("Breathe · Move · Restore", 335, 26, { font: "Lora", weight: "italic", fill: "#cffafe" }),
+  ]],
+};
 
 function template(slug: string, title: string, category: string, tags: string[], background: string, elements: El[]): Template {
   return { id: `builtin-${slug}`, title, category, tags, source: "builtin", design: design(slug, background, elements) };

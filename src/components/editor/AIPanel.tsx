@@ -8,6 +8,7 @@ import { useSuggestDesign, useGenerateTagline } from "@/hooks/useAI";
 import { useEditorStore } from "@/store/editor.store";
 import { toast } from "sonner";
 import type { DesignElement } from "@/types";
+import { getSide } from "@/lib/editor";
 
 export function AIPanel() {
   const [name, setName] = useState("");
@@ -20,13 +21,15 @@ export function AIPanel() {
   const ready = !!name.trim() && !!industry.trim();
 
   const handleDesign = () => {
-    const hasContent = useEditorStore.getState().design.elements.length > 0;
-    if (hasContent && !confirm("Replace the current design with an AI suggestion? You can undo this.")) return;
+    const { design, side } = useEditorStore.getState();
+    const hasContent = getSide(design, side).elements.length > 0;
+    if (hasContent && !confirm(`Replace the ${side} of the card with an AI suggestion? You can undo this.`)) return;
     suggestDesign(
       { industry, name, style: style || "modern" },
       {
         onSuccess: (data) => {
-          useEditorStore.getState().setDesign(data.design);
+          // Apply to the side being edited, leaving the other side untouched.
+          useEditorStore.getState().replaceSide({ background: data.design.background, elements: data.design.elements ?? [] });
           toast.success(data.description ? `Applied “${data.description}”` : "AI design applied");
         },
       }

@@ -6,7 +6,7 @@ import { Stage, Layer, Group, Rect, Text, Image as KonvaImage, Shape, Line, Tran
 import useImage from "use-image";
 import QRCode from "qrcode";
 import { useEditorStore } from "@/store/editor.store";
-import { DEFAULT_BLEED, boundsOf, clamp, fontStyleOf } from "@/lib/editor";
+import { DEFAULT_BLEED, boundsOf, clamp, fontStyleOf, getSide } from "@/lib/editor";
 import type {
   DesignElement,
   DrawElement,
@@ -318,6 +318,8 @@ function TextEditor({
 
 export default function EditorStage() {
   const design = useEditorStore((s) => s.design);
+  const side = useEditorStore((s) => s.side);
+  const { background, elements } = getSide(design, side);
   const selectedId = useEditorStore((s) => s.selectedId);
   const editingTextId = useEditorStore((s) => s.editingTextId);
   const tool = useEditorStore((s) => s.tool);
@@ -398,7 +400,7 @@ export default function EditorStage() {
   const originX = (size.w - W * zoom) / 2 + pan.x;
   const originY = (size.h - H * zoom) / 2 + pan.y;
 
-  const selected = design.elements.find((el) => el.id === selectedId) ?? null;
+  const selected = elements.find((el) => el.id === selectedId) ?? null;
 
   // Attach the transformer to the selected node
   useEffect(() => {
@@ -587,7 +589,7 @@ export default function EditorStage() {
     return lines;
   }, [W, H]);
 
-  const editingEl = design.elements.find((el) => el.id === editingTextId && el.type === "text") as TextElement | undefined;
+  const editingEl = elements.find((el) => el.id === editingTextId && el.type === "text") as TextElement | undefined;
 
   const cursor = panStart.current ? "grabbing" : spaceDown ? "grab" : tool === "draw" ? "crosshair" : "default";
 
@@ -626,14 +628,14 @@ export default function EditorStage() {
                 name="card-bg"
                 width={W}
                 height={H}
-                fill={design.background ?? "#ffffff"}
+                fill={background}
                 shadowColor="#000000"
                 shadowBlur={24}
                 shadowOpacity={0.18}
                 shadowOffsetY={6}
               />
               <Group clipX={0} clipY={0} clipWidth={W} clipHeight={H}>
-                {design.elements.map((el) => {
+                {elements.map((el) => {
                   if (el.isVisible === false) return null;
                   const props = { el, common: commonFor(el), onChange } as const;
                   switch (el.type) {

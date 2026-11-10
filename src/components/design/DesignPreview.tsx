@@ -2,8 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { cn } from "@/lib/utils";
-import { fontStyleOf, normalizeDesign } from "@/lib/editor";
-import type { DesignElement, DesignSchema, QRElement } from "@/types";
+import { fontStyleOf, getSide, normalizeDesign } from "@/lib/editor";
+import type { CardSide, DesignElement, DesignSchema, QRElement } from "@/types";
 
 /** SVG geometry matching the editor's Konva shapes (see EditorStage drawShape). */
 function ShapeSvg({ type, w, h, fill }: { type: string; w: number; h: number; fill: string }) {
@@ -140,8 +140,17 @@ function ElementView({ el, width, height }: { el: DesignElement; width: number; 
 }
 
 /** Static, scaled rendering of a card design that fills its container's width. */
-export function DesignPreview({ design: raw, className }: { design?: DesignSchema | null; className?: string }) {
+export function DesignPreview({
+  design: raw,
+  side = "front",
+  className,
+}: {
+  design?: DesignSchema | null;
+  side?: CardSide;
+  className?: string;
+}) {
   const design = normalizeDesign(raw);
+  const { background, elements } = getSide(design, side);
   const ref = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0);
 
@@ -157,7 +166,7 @@ export function DesignPreview({ design: raw, className }: { design?: DesignSchem
     <div
       ref={ref}
       className={cn("relative w-full overflow-hidden", className)}
-      style={{ aspectRatio: `${design.width} / ${design.height}`, background: design.background }}
+      style={{ aspectRatio: `${design.width} / ${design.height}`, background }}
     >
       {scale > 0 && (
         <div
@@ -165,7 +174,7 @@ export function DesignPreview({ design: raw, className }: { design?: DesignSchem
           style={{ width: design.width, height: design.height, transform: `scale(${scale})`, transformOrigin: "top left" }}
           aria-hidden
         >
-          {design.elements
+          {elements
             .filter((el) => el.isVisible !== false)
             .map((el) => (
               <ElementView key={el.id} el={el} width={design.width} height={design.height} />

@@ -96,8 +96,17 @@ export default function TemplatesPage() {
                 <DialogTitle>{previewing.title}</DialogTitle>
                 <DialogDescription>{previewing.category ?? "Template"}</DialogDescription>
               </DialogHeader>
-              <div className="overflow-hidden rounded-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
-                <DesignPreview design={previewing.design} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                {(["front", "back"] as const).map((side) => (
+                  <figure key={side}>
+                    <div className="overflow-hidden rounded-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+                      <DesignPreview design={previewing.design} side={side} />
+                    </div>
+                    <figcaption className="mt-2 text-center text-xs font-medium text-muted-foreground">
+                      {side === "front" ? "Front" : "Back"}
+                    </figcaption>
+                  </figure>
+                ))}
               </div>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex flex-wrap gap-1.5">

@@ -159,12 +159,23 @@ export interface ElementPatch {
   points?: Point[] | number[];
 }
 
+export type CardSide = "front" | "back";
+
+/** One printed side of a card. */
+export interface CardSideDesign {
+  background?: string;
+  elements: DesignElement[];
+}
+
 export interface DesignSchema {
   width: number;
   height: number;
   dpi?: number;
+  /** Front side background and elements (kept top-level for backwards compatibility). */
   background?: string;
   elements: DesignElement[];
+  /** Back side; absent on older single-sided cards. */
+  back?: CardSideDesign | null;
   brand_kit?: {
     colors: string[];
     font_id?: string | null;

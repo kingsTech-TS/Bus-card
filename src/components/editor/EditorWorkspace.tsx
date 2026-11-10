@@ -18,6 +18,8 @@ import { ExportModal } from "./ExportModal";
 import { LeftPanel } from "./LeftPanel";
 import { RightPanel } from "./RightPanel";
 import { IconToggle } from "./fields";
+import { DesignPreview } from "@/components/design/DesignPreview";
+import type { CardSide } from "@/types";
 
 // Konva needs `window`, so the stage is client-only.
 const EditorStage = dynamic(() => import("./EditorStage"), {
@@ -113,7 +115,7 @@ function Header({ save, isSaving }: { save: () => void; isSaving: boolean }) {
           <Save />
           Save
         </Button>
-        {cardId && <ExportModal cardId={cardId} />}
+        {cardId && <ExportModal cardId={cardId} onBeforeExport={save} />}
       </div>
     </header>
   );
@@ -127,6 +129,7 @@ const SHORTCUTS: [string, string][] = [
   ["Edit text", "Double-click / Enter"],
   ["Zoom", "Ctrl + scroll, Ctrl +/−"],
   ["Fit to screen", "Ctrl 0"],
+  ["Flip front / back", "Ctrl Shift F"],
   ["Pan", "Scroll, or hold Space + drag"],
   ["Select / Draw", "V / P"],
 ];
@@ -170,6 +173,42 @@ function CanvasControls() {
   );
 }
 
+function SideSwitcher() {
+  const design = useEditorStore((s) => s.design);
+  const side = useEditorStore((s) => s.side);
+  const setSide = useEditorStore((s) => s.setSide);
+
+  return (
+    <div className="pointer-events-none absolute inset-x-0 top-4 z-10 flex justify-center">
+      <div
+        role="tablist"
+        aria-label="Card side"
+        className="pointer-events-auto flex items-center gap-1 rounded-xl border border-border bg-card/95 p-1 shadow-lg backdrop-blur"
+      >
+        {(["front", "back"] as CardSide[]).map((s) => (
+          <button
+            key={s}
+            type="button"
+            role="tab"
+            aria-selected={side === s}
+            onClick={() => setSide(s)}
+            title={`Edit the ${s} (Ctrl+Shift+F to flip)`}
+            className={cn(
+              "flex items-center gap-2 rounded-lg py-1 pl-1 pr-3 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+              side === s && "bg-primary/10 text-primary hover:bg-primary/15 hover:text-primary"
+            )}
+          >
+            <span className={cn("w-14 overflow-hidden rounded-[3px] ring-1 ring-black/10 dark:ring-white/15", side === s && "ring-2 ring-primary")}>
+              <DesignPreview design={design} side={s} />
+            </span>
+            {s === "front" ? "Front" : "Back"}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function EditorWorkspace() {
   const { save, isSaving } = useCardSave();
   const tool = useEditorStore((s) => s.tool);
@@ -190,8 +229,9 @@ export function EditorWorkspace() {
           )}
         >
           <EditorStage />
+          <SideSwitcher />
           {tool === "draw" && (
-            <div className="pointer-events-none absolute inset-x-0 top-4 flex justify-center">
+            <div className="pointer-events-none absolute inset-x-0 top-20 flex justify-center">
               <span className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground shadow">
                 Drawing mode — press Esc to stop
               </span>

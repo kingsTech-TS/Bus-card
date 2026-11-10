@@ -1,4 +1,4 @@
-import type { DesignElement, DesignSchema, Point } from "@/types";
+import type { CardSide, CardSideDesign, DesignElement, DesignSchema, Point } from "@/types";
 
 export const DEFAULT_BLEED = 37.5; // 0.125" at 300 DPI
 
@@ -99,13 +99,15 @@ function normalizeElement(raw: DesignElement, index: number): DesignElement {
   return el;
 }
 
-/** Fill defaults and order elements by zIndex so array order == stacking order. */
-export function normalizeDesign(design?: Partial<DesignSchema> | null): DesignSchema {
-  const elements = [...(design?.elements ?? [])]
+/** Order elements by zIndex (so array order == stacking order) and fill defaults. */
+function normalizeElements(list?: DesignElement[] | null): DesignElement[] {
+  return [...(list ?? [])]
     .map((el, i) => ({ el, i }))
     .sort((a, b) => (a.el.zIndex ?? a.i) - (b.el.zIndex ?? b.i) || a.i - b.i)
     .map(({ el }, i) => normalizeElement(el, i));
+}
 
+export function normalizeDesign(design?: Partial<DesignSchema> | null): DesignSchema {
   return {
     ...DEFAULT_DESIGN,
     ...design,
@@ -113,22 +115,57 @@ export function normalizeDesign(design?: Partial<DesignSchema> | null): DesignSc
     height: design?.height || DEFAULT_DESIGN.height,
     background: design?.background || "#ffffff",
     bleed_area: design?.bleed_area ?? DEFAULT_BLEED,
-    elements,
+    elements: normalizeElements(design?.elements),
+    back: {
+      background: design?.back?.background || "#ffffff",
+      elements: normalizeElements(design?.back?.elements),
+    },
   };
+}
+
+/** Background + elements of one side of the card. */
+export function getSide(design: DesignSchema, side: CardSide): Required<CardSideDesign> {
+  if (side === "back") {
+    return { background: design.back?.background || "#ffffff", elements: design.back?.elements ?? [] };
+  }
+  return { background: design.background || "#ffffff", elements: design.elements };
+}
+
+/** Return a copy of the design with one side replaced/patched. */
+export function setSide(design: DesignSchema, side: CardSide, patch: Partial<CardSideDesign>): DesignSchema {
+  if (side === "back") {
+    return { ...design, back: { ...getSide(design, "back"), ...patch } };
+  }
+  return {
+    ...design,
+    ...(patch.background !== undefined && { background: patch.background }),
+    ...(patch.elements !== undefined && { elements: patch.elements }),
+  };
+}
+
+export function hasBackContent(design?: DesignSchema | null): boolean {
+  const back = design?.back;
+  return !!back && (back.elements.length > 0 || !["#fff", "#ffffff"].includes((back.background ?? "#ffffff").toLowerCase()));
+}
+
+function serializeElements(list: DesignElement[]): DesignElement[] {
+  return list.map((el, i) => {
+    const out = { ...el, zIndex: i } as DesignElement;
+    if (out.type === "text") out.fontSize = Math.max(1, Math.round(out.fontSize));
+    if (out.type === "draw" || out.type === "line") {
+      out.strokeWidth = Math.max(1, Math.round(out.strokeWidth));
+    }
+    return out;
+  });
 }
 
 /** Make the design acceptable to the backend's Pydantic schema (some fields are ints). */
 export function serializeDesign(design: DesignSchema): DesignSchema {
+  const back = getSide(design, "back");
   return {
     ...design,
-    elements: design.elements.map((el, i) => {
-      const out = { ...el, zIndex: i } as DesignElement;
-      if (out.type === "text") out.fontSize = Math.max(1, Math.round(out.fontSize));
-      if (out.type === "draw" || out.type === "line") {
-        out.strokeWidth = Math.max(1, Math.round(out.strokeWidth));
-      }
-      return out;
-    }),
+    elements: serializeElements(design.elements),
+    back: { background: back.background, elements: serializeElements(back.elements) },
   };
 }
 

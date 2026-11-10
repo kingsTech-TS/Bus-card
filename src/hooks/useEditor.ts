@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect } from "react";
-import { useEditorStore } from "@/store/editor.store";
+import { useEditorStore, selectSelectedElement } from "@/store/editor.store";
 import { useUpdateCard } from "./useCards";
 import { serializeDesign } from "@/lib/editor";
 
@@ -54,7 +54,7 @@ export function useEditorShortcuts(save: () => void) {
       const s = useEditorStore.getState();
       const mod = e.ctrlKey || e.metaKey;
       const key = e.key.toLowerCase();
-      const selected = s.design.elements.find((el) => el.id === s.selectedId);
+      const selected = selectSelectedElement(s);
 
       if (mod && key === "z") {
         e.preventDefault();
@@ -78,6 +78,9 @@ export function useEditorShortcuts(save: () => void) {
       } else if (mod && key === "0") {
         e.preventDefault();
         s.requestFit();
+      } else if (mod && e.shiftKey && key === "f") {
+        e.preventDefault();
+        s.setSide(s.side === "front" ? "back" : "front");
       } else if (mod && key === "]") {
         e.preventDefault();
         if (selected) s.moveLayer(selected.id, e.shiftKey ? "top" : "up");

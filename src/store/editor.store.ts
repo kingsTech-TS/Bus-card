@@ -1,6 +1,6 @@
 import { create } from "zustand";
-import type { Card, DesignElement, DesignSchema, ElementPatch } from "@/types";
-import { DEFAULT_DESIGN, clamp, genId, normalizeDesign } from "@/lib/editor";
+import type { Card, CardSide, CardSideDesign, DesignElement, DesignSchema, ElementPatch } from "@/types";
+import { DEFAULT_DESIGN, clamp, genId, getSide, normalizeDesign, setSide as patchSide } from "@/lib/editor";
 
 export type EditorTool = "select" | "draw";
 export type LayerMove = "up" | "down" | "top" | "bottom";
@@ -18,6 +18,8 @@ interface EditorStore {
   cardId: string | null;
   title: string;
   design: DesignSchema;
+  /** Which side of the card is being edited. */
+  side: CardSide;
   selectedId: string | null;
   editingTextId: string | null;
 
@@ -41,6 +43,9 @@ interface EditorStore {
   loadCard: (card: Card) => void;
   setTitle: (title: string) => void;
   setDesign: (design: DesignSchema) => void;
+  setSide: (side: CardSide) => void;
+  /** Replace the active side's content (e.g. with an AI suggestion). */
+  replaceSide: (content: CardSideDesign) => void;
   setBackground: (color: string) => void;
   addElement: (el: NewElement) => string;
   updateElement: (id: string, patch: ElementPatch, opts?: CommitOptions) => void;
@@ -71,6 +76,7 @@ const initialState = {
   cardId: null,
   title: "Untitled Card",
   design: DEFAULT_DESIGN,
+  side: "front" as CardSide,
   selectedId: null,
   editingTextId: null,
   isDirty: false,
@@ -94,7 +100,8 @@ function withZIndex(elements: DesignElement[]): DesignElement[] {
 
 /** Record a new design state, pushing or coalescing an undo step. */
 function commit(s: EditorStore, next: DesignSchema, opts: CommitOptions = {}): Partial<EditorStore> {
-  const design = { ...next, elements: withZIndex(next.elements) };
+  const back = getSide(next, "back");
+  const design = { ...next, elements: withZIndex(next.elements), back: { ...back, elements: withZIndex(back.elements) } };
   const base = { design, isDirty: true, revision: s.revision + 1 };
 
   if (opts.history === false) {
@@ -118,8 +125,14 @@ function commit(s: EditorStore, next: DesignSchema, opts: CommitOptions = {}): P
   };
 }
 
+/** Elements of the side currently being edited. */
+const activeElements = (s: Pick<EditorStore, "design" | "side">) => getSide(s.design, s.side).elements;
+
+/** Design with the active side's elements replaced. */
+const withElements = (s: EditorStore, elements: DesignElement[]) => patchSide(s.design, s.side, { elements });
+
 function mapElement(s: EditorStore, id: string, fn: (el: DesignElement) => DesignElement): DesignSchema {
-  return { ...s.design, elements: s.design.elements.map((el) => (el.id === id ? fn(el) : el)) };
+  return withElements(s, activeElements(s).map((el) => (el.id === id ? fn(el) : el)));
 }
 
 export const useEditorStore = create<EditorStore>()((set, get) => ({
@@ -142,8 +155,16 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
   setDesign: (design) =>
     set((s) => ({ ...commit(s, normalizeDesign(design)), selectedId: null, editingTextId: null })),
 
+  setSide: (side) => set({ side, selectedId: null, editingTextId: null }),
+
+  replaceSide: (content) =>
+    set((s) => {
+      const normalized = getSide(normalizeDesign({ ...s.design, elements: content.elements, background: content.background }), "front");
+      return { ...commit(s, patchSide(s.design, s.side, normalized)), selectedId: null, editingTextId: null };
+    }),
+
   setBackground: (color) =>
-    set((s) => commit(s, { ...s.design, background: color }, { coalesce: "background" })),
+    set((s) => commit(s, patchSide(s.design, s.side, { background: color }), { coalesce: `background:${s.side}` })),
 
   addElement: (el) => {
     const id = el.id ?? genId();
@@ -156,7 +177,7 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
       id,
     } as DesignElement;
     set((s) => ({
-      ...commit(s, { ...s.design, elements: [...s.design.elements, newEl] }),
+      ...commit(s, withElements(s, [...activeElements(s), newEl])),
       selectedId: id,
     }));
     return id;
@@ -167,13 +188,13 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 
   removeElement: (id) =>
     set((s) => ({
-      ...commit(s, { ...s.design, elements: s.design.elements.filter((el) => el.id !== id) }),
+      ...commit(s, withElements(s, activeElements(s).filter((el) => el.id !== id))),
       selectedId: s.selectedId === id ? null : s.selectedId,
       editingTextId: null,
     })),
 
   duplicateElement: (id) => {
-    const src = get().design.elements.find((el) => el.id === id);
+    const src = activeElements(get()).find((el) => el.id === id);
     if (!src) return;
     const offset = 24;
     const copy = { ...src, id: genId(), x: src.x + offset, y: src.y + offset, isLocked: false } as DesignElement;
@@ -181,16 +202,16 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
       copy.points = copy.points.map((p) => ({ x: p.x + offset, y: p.y + offset }));
     }
     set((s) => {
-      const idx = s.design.elements.findIndex((el) => el.id === id);
-      const elements = [...s.design.elements];
+      const elements = [...activeElements(s)];
+      const idx = elements.findIndex((el) => el.id === id);
       elements.splice(idx + 1, 0, copy);
-      return { ...commit(s, { ...s.design, elements }), selectedId: copy.id };
+      return { ...commit(s, withElements(s, elements)), selectedId: copy.id };
     });
   },
 
   moveLayer: (id, move) =>
     set((s) => {
-      const elements = [...s.design.elements];
+      const elements = [...activeElements(s)];
       const idx = elements.findIndex((el) => el.id === id);
       if (idx < 0) return s;
       const [el] = elements.splice(idx, 1);
@@ -201,7 +222,7 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
         : Math.max(idx - 1, 0);
       if (target === idx) return s;
       elements.splice(target, 0, el);
-      return commit(s, { ...s.design, elements });
+      return commit(s, withElements(s, elements));
     }),
 
   toggleVisibility: (id) =>
@@ -239,7 +260,7 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
       revision: revision + 1,
       lastCommit: null,
       editingTextId: null,
-      selectedId: design.elements.some((el) => el.id === selectedId) ? selectedId : null,
+      selectedId: getSide(design, get().side).elements.some((el) => el.id === selectedId) ? selectedId : null,
     });
   },
 
@@ -254,7 +275,7 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
       revision: revision + 1,
       lastCommit: null,
       editingTextId: null,
-      selectedId: design.elements.some((el) => el.id === selectedId) ? selectedId : null,
+      selectedId: getSide(design, get().side).elements.some((el) => el.id === selectedId) ? selectedId : null,
     });
   },
 
@@ -262,4 +283,4 @@ export const useEditorStore = create<EditorStore>()((set, get) => ({
 }));
 
 export const selectSelectedElement = (s: EditorStore) =>
-  s.design.elements.find((el) => el.id === s.selectedId) ?? null;
+  activeElements(s).find((el) => el.id === s.selectedId) ?? null;

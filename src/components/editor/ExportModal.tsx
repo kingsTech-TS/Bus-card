@@ -39,11 +39,9 @@ export function ExportModal({ cardId }: { cardId: string }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger>
-        <Button size="sm">
-          <Download className="w-4 h-4 mr-2" />
-          Export
-        </Button>
+      <DialogTrigger render={<Button size="sm" />}>
+        <Download className="w-4 h-4" />
+        Export
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>

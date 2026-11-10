@@ -53,7 +53,8 @@ export default function DashboardPage() {
            <Image 
              src="/meditating-bear.png" 
              alt="Meditating Bear" 
-             fill 
+             fill
+             sizes="(min-width: 768px) 320px, 256px"
              className="object-contain drop-shadow-sm"
              priority
            />

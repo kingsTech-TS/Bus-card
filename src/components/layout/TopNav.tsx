@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Menu, Sun, Moon, LogOut, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -52,13 +51,13 @@ export function TopNav() {
 
         {user && (
           <DropdownMenu>
-            <DropdownMenuTrigger>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage src={user.avatar_url} alt={user.full_name || 'User'} />
+            <DropdownMenuTrigger
+              render={<Button variant="ghost" className="relative h-8 w-8 rounded-full p-0" aria-label="Account menu" />}
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user.avatar_url} alt={user.full_name || "User"} />
                 <AvatarFallback>{(user.full_name || user.email)[0].toUpperCase()}</AvatarFallback>
               </Avatar>
-              </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <div className="flex items-center justify-start gap-2 p-2">

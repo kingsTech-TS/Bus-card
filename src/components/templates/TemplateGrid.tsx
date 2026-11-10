@@ -1,42 +1,51 @@
-import { Template } from "@/types";
-import { TemplateCard } from "./TemplateCard";
+"use client";
+import type { Template } from "@/types";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TemplateCard } from "./TemplateCard";
 
 interface TemplateGridProps {
-  templates?: Template[];
-  isLoading: boolean;
+  templates: Template[];
+  isLoading?: boolean;
+  onPreview: (t: Template) => void;
+  onUse: (t: Template) => void;
+  creatingId: string | null;
+  onClearFilters?: () => void;
 }
 
-export function TemplateGrid({ templates, isLoading }: TemplateGridProps) {
-  if (isLoading) {
+const GRID = "grid gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4";
+
+export function TemplateGrid({ templates, isLoading, onPreview, onUse, creatingId, onClearFilters }: TemplateGridProps) {
+  if (isLoading && templates.length === 0) {
     return (
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="flex flex-col space-y-3">
-            <Skeleton className="h-[200px] w-full rounded-xl" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-            </div>
+      <div className={GRID}>
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="space-y-3">
+            <Skeleton className="aspect-[1.75] w-full rounded-2xl" />
+            <Skeleton className="h-4 w-2/3" />
           </div>
         ))}
       </div>
     );
   }
 
-  if (!templates || templates.length === 0) {
+  if (templates.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed rounded-xl">
-        <h3 className="text-xl font-semibold mb-2">No templates found</h3>
-        <p className="text-muted-foreground max-w-sm">Try adjusting your search query or filters.</p>
+      <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed py-20 text-center">
+        <h3 className="mb-2 text-lg font-semibold">No templates match</h3>
+        <p className="mb-4 max-w-sm text-sm text-muted-foreground">Try a different search term or category.</p>
+        {onClearFilters && (
+          <button type="button" onClick={onClearFilters} className="text-sm font-medium text-primary hover:underline">
+            Clear filters
+          </button>
+        )}
       </div>
     );
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {templates.map((template) => (
-        <TemplateCard key={template.id} template={template} />
+    <div className={GRID}>
+      {templates.map((t) => (
+        <TemplateCard key={t.id} template={t} onPreview={onPreview} onUse={onUse} isCreating={creatingId === t.id} />
       ))}
     </div>
   );

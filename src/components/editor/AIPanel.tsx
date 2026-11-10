@@ -1,90 +1,107 @@
 "use client";
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Plus, Wand2, Quote } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useSuggestDesign, useGenerateTagline } from "@/hooks/useAI";
 import { useEditorStore } from "@/store/editor.store";
-import { Loader2, Sparkles, Wand2 } from "lucide-react";
+import { toast } from "sonner";
+import type { DesignElement } from "@/types";
 
 export function AIPanel() {
-  const { design, loadCard, cardId, title } = useEditorStore();
-  const [industry, setIndustry] = useState("");
   const [name, setName] = useState("");
+  const [industry, setIndustry] = useState("");
   const [style, setStyle] = useState("");
+  const [taglines, setTaglines] = useState<string[]>([]);
 
   const { mutate: suggestDesign, isPending: loadingDesign } = useSuggestDesign();
   const { mutate: suggestTagline, isPending: loadingTagline } = useGenerateTagline();
-  const [taglines, setTaglines] = useState<string[]>([]);
+  const ready = !!name.trim() && !!industry.trim();
 
   const handleDesign = () => {
-    if (!industry || !name) return;
-    suggestDesign({ industry, name, style }, {
-      onSuccess: (data) => {
-        // AI returns a whole new DesignSchema via our API
-        loadCard({ id: cardId!, title, design: data.design, owner_id: "", created_at: "", updated_at: "" });
+    const hasContent = useEditorStore.getState().design.elements.length > 0;
+    if (hasContent && !confirm("Replace the current design with an AI suggestion? You can undo this.")) return;
+    suggestDesign(
+      { industry, name, style: style || "modern" },
+      {
+        onSuccess: (data) => {
+          useEditorStore.getState().setDesign(data.design);
+          toast.success(data.description ? `Applied “${data.description}”` : "AI design applied");
+        },
       }
-    });
+    );
   };
 
-  const handleTagline = () => {
-    if (!industry || !name) return;
-    suggestTagline({ industry, name }, {
-      onSuccess: (data) => setTaglines(data.taglines)
-    });
+  const handleTagline = () =>
+    suggestTagline(
+      { name, industry, description: style },
+      { onSuccess: (data) => setTaglines((prev) => [data.tagline, ...prev.filter((t) => t !== data.tagline)].slice(0, 5)) }
+    );
+
+  const addTagline = (text: string) => {
+    const { design, addElement } = useEditorStore.getState();
+    const width = Math.min(700, design.width - 100);
+    addElement({
+      type: "text",
+      content: text,
+      fontSize: 30,
+      fontFamily: "Inter",
+      fontWeight: "italic",
+      fill: "#374151",
+      textAlign: "center",
+      width,
+      x: Math.round((design.width - width) / 2),
+      y: Math.round(design.height * 0.7),
+    } as Omit<DesignElement, "id">);
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="border-primary/20 bg-primary/5">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary" />
-            AI Context
-          </CardTitle>
-          <CardDescription>Tell our AI about your business to get tailored suggestions.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="space-y-1">
-            <Label className="text-xs">Business Name / Your Name</Label>
-            <Input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Acme Corp" />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Industry</Label>
-            <Input value={industry} onChange={e => setIndustry(e.target.value)} placeholder="e.g. Tech Startup" />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs">Style Preference</Label>
-            <Input value={style} onChange={e => setStyle(e.target.value)} placeholder="e.g. Minimal, Dark, Colorful" />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Button className="w-full" onClick={handleDesign} disabled={!industry || !name || loadingDesign}>
-        {loadingDesign ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wand2 className="w-4 h-4 mr-2" />}
-        Generate Full Design
-      </Button>
-
-      <div className="pt-4 border-t">
-        <Button variant="secondary" className="w-full mb-3" onClick={handleTagline} disabled={!industry || !name || loadingTagline}>
-          {loadingTagline ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-          Suggest Taglines
-        </Button>
-        {taglines.length > 0 && (
-          <div className="space-y-2 mt-4">
-            {taglines.map((t, idx) => (
-              <div key={idx} className="text-sm p-3 border rounded-md bg-muted/50 flex justify-between items-start group">
-                <p>{t}</p>
-                <Button size="sm" variant="ghost" className="h-6 px-2 opacity-0 group-hover:opacity-100" onClick={() => {
-                  navigator.clipboard.writeText(t);
-                }}>Copy</Button>
-              </div>
-            ))}
-          </div>
-        )}
+    <div className="space-y-5">
+      <div className="space-y-3">
+        <div className="space-y-1.5">
+          <Label className="text-xs">Business or your name</Label>
+          <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Acme Studio" />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Industry</Label>
+          <Input value={industry} onChange={(e) => setIndustry(e.target.value)} placeholder="e.g. Architecture" />
+        </div>
+        <div className="space-y-1.5">
+          <Label className="text-xs">Style</Label>
+          <Input value={style} onChange={(e) => setStyle(e.target.value)} placeholder="e.g. Minimal, bold, playful" />
+        </div>
       </div>
+
+      <div className="grid gap-2">
+        <Button className="w-full" onClick={handleDesign} disabled={!ready || loadingDesign}>
+          {loadingDesign ? <Loader2 className="animate-spin" /> : <Wand2 />}
+          Generate design
+        </Button>
+        <Button variant="outline" className="w-full" onClick={handleTagline} disabled={!ready || loadingTagline}>
+          {loadingTagline ? <Loader2 className="animate-spin" /> : <Quote />}
+          Suggest a tagline
+        </Button>
+      </div>
+
+      {taglines.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-xs font-medium text-muted-foreground">Taglines</h4>
+          {taglines.map((t) => (
+            <div key={t} className="flex items-start gap-2 rounded-xl border border-border bg-background p-3 text-sm">
+              <p className="flex-1">{t}</p>
+              <button
+                type="button"
+                onClick={() => addTagline(t)}
+                title="Add to card"
+                className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+              >
+                <Plus className="size-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

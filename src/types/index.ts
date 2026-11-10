@@ -53,18 +53,26 @@ export interface ResetPasswordRequest {
 
 // ─── Design / Cards ──────────────────────────────────────────────────────────
 
-export type ElementType = "text" | "image" | "shape" | "qr";
+export type ElementType = "text" | "image" | "shape" | "qr" | "draw" | "line";
 
+export interface Point {
+  x: number;
+  y: number;
+}
+
+/** Mirrors `BaseElement` in the backend's app/schemas/card.py */
 export interface BaseElement {
   id: string;
   type: ElementType;
   x: number;
   y: number;
-  width: number;
-  height: number;
+  width?: number;
+  height?: number;
+  zIndex?: number;
   rotation?: number;
   opacity?: number;
-  zIndex?: number;
+  isVisible?: boolean;
+  isLocked?: boolean;
 }
 
 export interface TextElement extends BaseElement {
@@ -73,6 +81,7 @@ export interface TextElement extends BaseElement {
   fontSize: number;
   fontFamily: string;
   fill: string;
+  /** Konva font style: "normal" | "bold" | "italic" | "italic bold" */
   fontWeight?: string;
   textAlign?: string;
 }
@@ -82,19 +91,73 @@ export interface ImageElement extends BaseElement {
   url: string;
 }
 
+export type ShapeType = "rect" | "circle" | "triangle" | "star" | "hexagon" | "diamond";
+
 export interface ShapeElement extends BaseElement {
   type: "shape";
-  shapeType: string;
+  shapeType: ShapeType | string;
   fill?: string;
 }
 
 export interface QRElement extends BaseElement {
   type: "qr";
+  /** Rendered QR image as a data URL (the backend export draws this). */
   data: string;
+  /** The text / URL encoded in the QR code. */
+  value?: string;
   fill?: string;
 }
 
-export type DesignElement = TextElement | ImageElement | ShapeElement | QRElement;
+export interface DrawElement extends BaseElement {
+  type: "draw";
+  /** Absolute card coordinates (the backend export ignores x/y for drawings). */
+  points: Point[];
+  stroke: string;
+  strokeWidth: number;
+  lineCap?: string;
+  lineJoin?: string;
+}
+
+export interface LineElement extends BaseElement {
+  type: "line";
+  points: number[];
+  stroke: string;
+  strokeWidth: number;
+  dash?: number[] | null;
+}
+
+export type DesignElement =
+  | TextElement
+  | ImageElement
+  | ShapeElement
+  | QRElement
+  | DrawElement
+  | LineElement;
+
+/** Any subset of element fields, used for partial updates from the editor. */
+export interface ElementPatch {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  rotation?: number;
+  opacity?: number;
+  isVisible?: boolean;
+  isLocked?: boolean;
+  content?: string;
+  fontSize?: number;
+  fontFamily?: string;
+  fill?: string;
+  fontWeight?: string;
+  textAlign?: string;
+  url?: string;
+  shapeType?: string;
+  data?: string;
+  value?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  points?: Point[] | number[];
+}
 
 export interface DesignSchema {
   width: number;
@@ -106,6 +169,8 @@ export interface DesignSchema {
     colors: string[];
     font_id?: string | null;
   };
+  bleed_area?: number;
+  show_trim_lines?: boolean;
 }
 
 export interface Card {
@@ -140,7 +205,16 @@ export interface Template {
   tags?: string[];
   design: DesignSchema;
   thumbnail_url?: string;
-  created_at: string;
+  created_at?: string;
+  /** "builtin" templates ship with the app; "custom" ones come from the backend. */
+  source?: "builtin" | "custom";
+}
+
+export interface TemplateCreate {
+  title: string;
+  category: string;
+  tags?: string[];
+  design: DesignSchema;
 }
 
 // ─── Brand Kit ───────────────────────────────────────────────────────────────
@@ -207,6 +281,7 @@ export interface AISuggestRequest {
 export interface AITaglineRequest {
   name: string;
   industry: string;
+  description?: string;
 }
 
 export interface AIImproveTextRequest {

@@ -1,3 +1,5 @@
+"use client";
+import { useDesignFonts } from "@/hooks/useFonts";
 import { Card as CardType } from "@/types";
 import { CardThumbnail } from "./CardThumbnail";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -8,6 +10,7 @@ interface CardGridProps {
 }
 
 export function CardGrid({ cards, isLoading }: CardGridProps) {
+  useDesignFonts();
   if (isLoading) {
     return (
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

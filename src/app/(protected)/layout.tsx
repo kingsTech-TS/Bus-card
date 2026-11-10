@@ -8,6 +8,11 @@ export default function ProtectedLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const isEditorPage = pathname.match(/\/cards\/[a-zA-Z0-9_-]+$/);
 
+  // The card editor is a full-screen workspace with its own chrome.
+  if (isEditorPage) {
+    return <div className="h-screen overflow-hidden bg-background font-sans text-foreground">{children}</div>;
+  }
+
   return (
     <div className="min-h-screen bg-background font-sans text-foreground">
       <div className={cn(

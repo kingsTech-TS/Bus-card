@@ -43,7 +43,10 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // A 401 from login/signup means bad credentials, not an expired session.
+    const isAuthRequest = /\/auth\/(login|signup|forgot-password|reset-password)/.test(originalRequest?.url ?? "");
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });

@@ -3,6 +3,7 @@
 export interface User {
   id: string;
   email: string;
+  username?: string | null;
   full_name?: string | null;
   role: "admin" | "user";
   is_active: boolean;
@@ -17,12 +18,14 @@ export interface AuthTokens {
 }
 
 export interface LoginRequest {
+  /** Email address or username. */
   email: string;
   password: string;
 }
 
 export interface SignupRequest {
   email: string;
+  username: string;
   password: string;
   full_name?: string;
 }

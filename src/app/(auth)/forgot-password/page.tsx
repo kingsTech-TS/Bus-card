@@ -1,103 +1,86 @@
 "use client";
 import { useState } from "react";
+import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import Link from "next/link";
+import { ArrowLeft, Loader2, MailCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { authService } from "@/services/auth.service";
-import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { getErrorMessage } from "@/services/api";
+import { AuthHeading, FormError, FormField, authInput } from "@/components/auth/FormField";
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email("Invalid email address"),
-});
-type ForgotPasswordData = z.infer<typeof forgotPasswordSchema>;
+const schema = z.object({ email: z.email("Enter a valid email address") });
+type FormData = z.infer<typeof schema>;
 
 export default function ForgotPasswordPage() {
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<ForgotPasswordData>({
-    resolver: zodResolver(forgotPasswordSchema),
-  });
+  } = useForm<FormData>({ resolver: zodResolver(schema) });
 
-  const onSubmit = async (data: ForgotPasswordData) => {
+  const onSubmit = async (data: FormData) => {
     setIsLoading(true);
+    setError(null);
     try {
       await authService.forgotPassword(data);
-      setIsSubmitted(true);
-      toast.success("Reset link sent to your email!");
-    } catch (error: any) {
-      toast.error(error.response?.data?.detail || "Failed to send reset link");
+      setSentTo(data.email);
+    } catch (err) {
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (isSubmitted) {
+  if (sentTo) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <Card className="w-full max-w-md rounded-[2rem] border-0 shadow-soft">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl font-bold">Check your email</CardTitle>
-            <CardDescription>
-              We've sent a password reset link to your email address.
-            </CardDescription>
-          </CardHeader>
-          <CardFooter>
-            <Button render={<Link href="/login" />} className="w-full rounded-xl">
-              Back to Login
-            </Button>
-          </CardFooter>
-        </Card>
+      <div className="text-center">
+        <span className="mx-auto mb-6 flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <MailCheck className="size-7" />
+        </span>
+        <AuthHeading
+          title="Check your email"
+          description={<>If an account exists for <span className="font-medium text-foreground">{sentTo}</span>, you&apos;ll get a link to reset your password.</>}
+        />
+        <Button nativeButton={false} render={<Link href="/login" />} variant="outline" className="h-11 w-full">
+          <ArrowLeft /> Back to sign in
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md rounded-[2rem] border-0 shadow-soft">
-        <CardHeader>
-          <div className="mb-4">
-            <Link href="/login" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Login
-            </Link>
-          </div>
-          <CardTitle className="text-2xl font-bold">Forgot Password?</CardTitle>
-          <CardDescription>
-            Enter your email address and we'll send you a link to reset your password.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="name@example.com"
-                className="rounded-xl"
-                {...register("email")}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email.message}</p>
-              )}
-            </div>
-            <Button type="submit" className="w-full rounded-xl" disabled={isLoading}>
-              {isLoading ? "Sending link..." : "Send Reset Link"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </div>
+    <>
+      <Link href="/login" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+        <ArrowLeft className="size-4" /> Back to sign in
+      </Link>
+      <AuthHeading title="Forgot your password?" description="Enter the email you signed up with and we'll send you a reset link." />
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+        <FormError message={error} />
+        <FormField id="email" label="Email" error={errors.email?.message}>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            autoFocus
+            className={authInput}
+            aria-invalid={!!errors.email}
+            disabled={isLoading}
+            {...register("email")}
+          />
+        </FormField>
+        <Button type="submit" className="h-11 w-full" disabled={isLoading}>
+          {isLoading && <Loader2 className="animate-spin" />}
+          {isLoading ? "Sending link…" : "Send reset link"}
+        </Button>
+      </form>
+    </>
   );
 }

@@ -49,72 +49,72 @@
 }
 
 :root {
-  --background: oklch(0.975 0.015 250);
-  --foreground: oklch(0.2 0.05 250);
+  --background: oklch(0.985 0.002 264);
+  --foreground: oklch(0.21 0.02 264);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.2 0.05 250);
+  --card-foreground: oklch(0.21 0.02 264);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.2 0.05 250);
-  --primary: oklch(0.45 0.15 270);
+  --popover-foreground: oklch(0.21 0.02 264);
+  --primary: oklch(0.54 0.22 275);
   --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.96 0.02 250);
-  --secondary-foreground: oklch(0.3 0.05 250);
-  --muted: oklch(0.96 0.02 250);
-  --muted-foreground: oklch(0.5 0.05 250);
-  --accent: oklch(0.95 0.03 260);
-  --accent-foreground: oklch(0.3 0.05 270);
-  --destructive: oklch(0.6 0.15 20);
-  --border: oklch(0.95 0.02 250);
-  --input: oklch(0.95 0.02 250);
-  --ring: oklch(0.5 0.1 270);
-  --chart-1: oklch(0.87 0.1 90);
-  --chart-2: oklch(0.556 0.1 300);
-  --chart-3: oklch(0.6 0.15 270);
-  --chart-4: oklch(0.7 0.1 200);
-  --chart-5: oklch(0.8 0.1 150);
-  --radius: 1.25rem;
+  --secondary: oklch(0.965 0.006 264);
+  --secondary-foreground: oklch(0.28 0.02 264);
+  --muted: oklch(0.965 0.006 264);
+  --muted-foreground: oklch(0.55 0.02 264);
+  --accent: oklch(0.95 0.03 280);
+  --accent-foreground: oklch(0.35 0.12 275);
+  --destructive: oklch(0.6 0.2 25);
+  --border: oklch(0.92 0.006 264);
+  --input: oklch(0.9 0.008 264);
+  --ring: oklch(0.6 0.18 275);
+  --chart-1: oklch(0.6 0.2 275);
+  --chart-2: oklch(0.7 0.15 200);
+  --chart-3: oklch(0.75 0.15 155);
+  --chart-4: oklch(0.8 0.15 85);
+  --chart-5: oklch(0.65 0.2 20);
+  --radius: 0.875rem;
   --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.2 0.05 250);
-  --sidebar-primary: oklch(0.45 0.15 270);
+  --sidebar-foreground: oklch(0.21 0.02 264);
+  --sidebar-primary: oklch(0.54 0.22 275);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.96 0.02 250);
-  --sidebar-accent-foreground: oklch(0.3 0.05 250);
-  --sidebar-border: oklch(0.95 0.02 250);
-  --sidebar-ring: oklch(0.5 0.1 270);
+  --sidebar-accent: oklch(0.965 0.006 264);
+  --sidebar-accent-foreground: oklch(0.28 0.02 264);
+  --sidebar-border: oklch(0.92 0.006 264);
+  --sidebar-ring: oklch(0.6 0.18 275);
 }
 
 .dark {
-  --background: oklch(0.20 0.03 250);
-  --foreground: oklch(0.98 0.01 250);
-  --card: oklch(0.25 0.03 250);
-  --card-foreground: oklch(0.98 0.01 250);
-  --popover: oklch(0.25 0.03 250);
-  --popover-foreground: oklch(0.98 0.01 250);
-  --primary: oklch(0.65 0.1 270);
-  --primary-foreground: oklch(0.2 0.03 250);
-  --secondary: oklch(0.3 0.03 250);
-  --secondary-foreground: oklch(0.98 0.01 250);
-  --muted: oklch(0.3 0.03 250);
-  --muted-foreground: oklch(0.7 0.02 250);
-  --accent: oklch(0.35 0.04 260);
-  --accent-foreground: oklch(0.98 0.01 250);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.6 0.1 270);
-  --chart-1: oklch(0.87 0.1 90);
-  --chart-2: oklch(0.556 0.1 300);
-  --chart-3: oklch(0.6 0.15 270);
-  --chart-4: oklch(0.7 0.1 200);
-  --chart-5: oklch(0.8 0.1 150);
-  --sidebar: oklch(0.25 0.03 250);
-  --sidebar-foreground: oklch(0.98 0.01 250);
-  --sidebar-primary: oklch(0.65 0.1 270);
-  --sidebar-primary-foreground: oklch(0.2 0.03 250);
-  --sidebar-accent: oklch(0.35 0.04 260);
-  --sidebar-accent-foreground: oklch(0.98 0.01 250);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.6 0.1 270);
+  --background: oklch(0.155 0.01 270);
+  --foreground: oklch(0.97 0.004 264);
+  --card: oklch(0.2 0.012 270);
+  --card-foreground: oklch(0.97 0.004 264);
+  --popover: oklch(0.21 0.012 270);
+  --popover-foreground: oklch(0.97 0.004 264);
+  --primary: oklch(0.68 0.17 277);
+  --primary-foreground: oklch(0.16 0.02 270);
+  --secondary: oklch(0.26 0.012 270);
+  --secondary-foreground: oklch(0.97 0.004 264);
+  --muted: oklch(0.25 0.012 270);
+  --muted-foreground: oklch(0.7 0.015 264);
+  --accent: oklch(0.3 0.05 277);
+  --accent-foreground: oklch(0.95 0.02 277);
+  --destructive: oklch(0.7 0.19 22);
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.68 0.17 277);
+  --chart-1: oklch(0.68 0.17 277);
+  --chart-2: oklch(0.72 0.13 200);
+  --chart-3: oklch(0.75 0.15 155);
+  --chart-4: oklch(0.82 0.14 85);
+  --chart-5: oklch(0.7 0.19 22);
+  --sidebar: oklch(0.18 0.011 270);
+  --sidebar-foreground: oklch(0.97 0.004 264);
+  --sidebar-primary: oklch(0.68 0.17 277);
+  --sidebar-primary-foreground: oklch(0.16 0.02 270);
+  --sidebar-accent: oklch(0.25 0.012 270);
+  --sidebar-accent-foreground: oklch(0.97 0.004 264);
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: oklch(0.68 0.17 277);
 }
 
 @layer base {
@@ -130,10 +130,40 @@
 }
 
 @layer utilities {
+  /* Subtle dotted backdrop used on marketing and auth pages */
+  .bg-dots {
+    background-image: radial-gradient(circle at 1px 1px, color-mix(in oklch, var(--foreground) 12%, transparent) 1px, transparent 0);
+    background-size: 22px 22px;
+  }
+  .text-gradient {
+    background-image: linear-gradient(100deg, var(--primary), oklch(0.65 0.2 320) 55%, oklch(0.72 0.16 40));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .animate-float {
+    animation: float 7s ease-in-out infinite;
+  }
+  .animate-marquee {
+    animation: marquee 50s linear infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float, .animate-marquee { animation: none; }
+  }
   .shadow-soft {
     box-shadow: 0 10px 40px -10px rgba(0,0,0,0.03), 0 10px 15px -5px rgba(0,0,0,0.01), 0 0 0 1px rgba(0,0,0,0.02);
   }
   .dark .shadow-soft {
     box-shadow: 0 10px 40px -10px rgba(0,0,0,0.4), 0 10px 15px -5px rgba(0,0,0,0.2), 0 0 0 1px rgba(255,255,255,0.05);
   }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(var(--tilt, 0deg)); }
+  50% { transform: translateY(-12px) rotate(var(--tilt, 0deg)); }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }

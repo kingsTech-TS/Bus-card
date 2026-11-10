@@ -1,5 +1,6 @@
 "use client";
 import { useAuthStore } from "@/store/auth.store";
+import { displayName } from "@/hooks/useAuth";
 import { useCards } from "@/hooks/useCards";
 import { useAdminStats } from "@/hooks/useAdmin";
 import { CreditCard, Eye, Download, Users, PlusCircle, LayoutTemplate, Palette, Calendar } from "lucide-react";
@@ -25,7 +26,7 @@ export default function DashboardPage() {
         
         <div className="flex-1 z-10 w-full md:pr-8 mt-8 md:mt-0">
            <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
-             Hi, {user?.full_name || user?.email?.split('@')[0] || 'there'}!
+             Hi, {displayName(user)}!
            </h1>
            <p className="text-muted-foreground text-lg mb-8">What are we doing today?</p>
            

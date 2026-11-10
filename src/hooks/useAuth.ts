@@ -20,45 +20,51 @@ export function useProfile() {
   });
 }
 
+/** Log in, store the refresh token in an httpOnly cookie and load the profile. */
+async function signIn(data: LoginRequest) {
+  const tokens = await authService.login({ ...data, email: data.email.trim() });
+  await fetch("/api/auth/set-refresh", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh_token: tokens.refresh_token }),
+  });
+  useAuthStore.getState().setAccessToken(tokens.access_token);
+  const user = await authService.getProfile();
+  useAuthStore.getState().setAuth(user, tokens.access_token);
+  return user;
+}
+
+export const displayName = (u?: { full_name?: string | null; username?: string | null; email?: string } | null) =>
+  u?.full_name || u?.username || u?.email?.split("@")[0] || "there";
+
 export function useLogin() {
-  const { setAuth } = useAuthStore();
   const router = useRouter();
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: LoginRequest) => {
-      const tokens = await authService.login(data);
-      // Store refresh token in httpOnly cookie via server route
-      await fetch("/api/auth/set-refresh", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ refresh_token: tokens.refresh_token }),
-      });
-      return tokens;
-    },
-    onSuccess: async (tokens) => {
-      const user = await authService.getProfile();
-      setAuth(user, tokens.access_token);
-      qc.setQueryData(["user"], user);
-      toast.success(`Welcome back, ${user.full_name || 'there'}!`);
+    mutationFn: signIn,
+    onSuccess: (user) => {
+      qc.setQueryData(["profile"], user);
+      toast.success(`Welcome back, ${displayName(user)}!`);
       router.push("/dashboard");
-    },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Login failed");
     },
   });
 }
 
+/** Create the account, then sign straight in. */
 export function useSignup() {
   const router = useRouter();
+  const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: SignupRequest) => authService.signup(data),
-    onSuccess: () => {
-      toast.success("Account created! Please log in.");
-      router.push("/login");
+    mutationFn: async (data: SignupRequest) => {
+      const payload = { ...data, email: data.email.trim().toLowerCase(), username: data.username.trim().toLowerCase() };
+      await authService.signup({ ...payload, full_name: payload.full_name || payload.username });
+      return signIn({ email: payload.email, password: data.password });
     },
-    onError: (err: Error) => {
-      toast.error(err.message ?? "Signup failed");
+    onSuccess: (user) => {
+      qc.setQueryData(["profile"], user);
+      toast.success(`Welcome to BusCard, ${displayName(user)}!`);
+      router.push("/dashboard");
     },
   });
 }

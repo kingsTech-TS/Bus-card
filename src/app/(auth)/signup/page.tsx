@@ -1,25 +1,25 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { SignupForm } from "@/components/auth/SignupForm";
 import Link from "next/link";
+import type { Metadata } from "next";
+import { SignupForm } from "@/components/auth/SignupForm";
+import { AuthHeading } from "@/components/auth/FormField";
+
+export const metadata: Metadata = { title: "Create account · BusCard" };
 
 export default function SignupPage() {
   return (
-    <div className="flex-1 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Create an account</CardTitle>
-          <CardDescription>Start designing beautiful business cards</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <SignupForm />
-          <div className="mt-6 text-center text-sm text-muted-foreground">
+    <>
+      <AuthHeading
+        title="Create your account"
+        description={
+          <>
             Already have an account?{" "}
-            <Link href="/login" className="text-primary hover:underline">
-              Log in
+            <Link href="/login" className="font-medium text-primary hover:underline">
+              Sign in
             </Link>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          </>
+        }
+      />
+      <SignupForm />
+    </>
   );
 }

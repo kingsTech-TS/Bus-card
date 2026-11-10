@@ -22,8 +22,12 @@ export const authService = {
     return res.data;
   },
 
-  async logout(): Promise<void> {
-    await api.post("/auth/logout");
+  /** Best-effort server logout. Token is passed explicitly because local auth is cleared first. */
+  async logout(accessToken: string): Promise<void> {
+    await api.post("/auth/logout", null, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      timeout: 5_000,
+    });
   },
 
   async getProfile(): Promise<User> {

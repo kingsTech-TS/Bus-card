@@ -43,10 +43,13 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
-    // A 401 from login/signup means bad credentials, not an expired session.
-    const isAuthRequest = /\/auth\/(login|signup|forgot-password|reset-password)/.test(originalRequest?.url ?? "");
+    // A 401 from login/signup means bad credentials, not an expired session;
+    // a 401 from logout must never revive the session via a refresh.
+    const isAuthRequest = /\/auth\/(login|signup|logout|forgot-password|reset-password)/.test(originalRequest?.url ?? "");
+    // No local session (e.g. mid-logout): don't refresh, or we'd re-create the cookies.
+    const hasSession = !!useAuthStore.getState().accessToken;
 
-    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest) {
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthRequest && hasSession) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });

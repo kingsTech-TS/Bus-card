@@ -8,7 +8,6 @@ import type {
   LoginRequest, SignupRequest, UpdateProfileRequest,
   ChangeUsernameRequest, ChangePasswordRequest,
 } from "@/types";
-import Cookies from "js-cookie";
 
 export function useProfile() {
   const { accessToken } = useAuthStore();
@@ -69,20 +68,29 @@ export function useSignup() {
   });
 }
 
+/**
+ * End the session locally first (so no in-flight 401 can trigger a token refresh
+ * that re-creates the cookies), tell the backend best-effort, then hard-navigate
+ * so the proxy sees the cleared cookies and the client router cache is discarded.
+ */
+async function endSession(qc: ReturnType<typeof useQueryClient>, notifyBackend: boolean) {
+  const token = useAuthStore.getState().accessToken;
+  useAuthStore.getState().clearAuth();
+  await qc.cancelQueries();
+  qc.clear();
+  await Promise.allSettled([
+    notifyBackend && token ? authService.logout(token) : Promise.resolve(),
+    fetch("/api/auth/set-refresh", { method: "DELETE" }),
+  ]);
+}
+
 export function useLogout() {
-  const { clearAuth } = useAuthStore();
-  const router = useRouter();
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
-      await authService.logout().catch(() => {});
-      await fetch("/api/auth/set-refresh", { method: "DELETE" });
-    },
+    mutationFn: () => endSession(qc, true),
     onSettled: () => {
-      clearAuth();
-      qc.clear();
-      router.push("/login");
+      window.location.replace("/login");
     },
   });
 }
@@ -141,15 +149,12 @@ export function useResetPassword() {
 }
 
 export function useDeleteAccount() {
-  const { clearAuth } = useAuthStore();
-  const router = useRouter();
+  const qc = useQueryClient();
   return useMutation({
     mutationFn: authService.deleteAccount,
-    onSuccess: () => {
-      clearAuth();
-      Cookies.remove("auth_token");
-      router.push("/");
-      toast.success("Account deleted.");
+    onSuccess: async () => {
+      await endSession(qc, false);
+      window.location.replace("/");
     },
     onError: (err: Error) => toast.error(err.message),
   });

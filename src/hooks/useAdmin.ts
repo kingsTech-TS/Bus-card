@@ -22,10 +22,12 @@ export function usePromoteUser() {
   });
 }
 
-export function useAdminStats() {
+/** Admin-only endpoint: pass `enabled: false` for normal users to avoid a 403. */
+export function useAdminStats(enabled = true) {
   return useQuery({
     queryKey: ["admin", "stats"],
     queryFn: adminService.getStats,
+    enabled,
   });
 }
 

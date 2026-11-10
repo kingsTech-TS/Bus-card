@@ -15,7 +15,11 @@ export function PanelSection({ title, children, action }: { title: string; child
   );
 }
 
-/** Numeric input that lets you type freely and commits valid numbers. */
+/**
+ * Numeric input that lets you type freely.
+ * By default valid numbers apply as you type; with `commitOnBlur` they apply on Enter or when the
+ * field loses focus (use this when each change is relative, e.g. scaling a group).
+ */
 export function NumberField({
   label,
   value,
@@ -25,6 +29,7 @@ export function NumberField({
   step = 1,
   suffix,
   disabled,
+  commitOnBlur = false,
 }: {
   label: string;
   value: number;
@@ -34,10 +39,21 @@ export function NumberField({
   step?: number;
   suffix?: string;
   disabled?: boolean;
+  commitOnBlur?: boolean;
 }) {
   const rounded = Math.round(value * 100) / 100;
   // While focused, show what the user typed; otherwise mirror the live value.
   const [draft, setDraft] = useState<string | null>(null);
+
+  const parse = (raw: string) => {
+    const n = Number(raw);
+    return raw !== "" && Number.isFinite(n) ? Math.min(max ?? Infinity, Math.max(min ?? -Infinity, n)) : null;
+  };
+  const commit = () => {
+    if (draft === null) return;
+    const n = parse(draft);
+    if (n !== null && n !== rounded) onChange(n);
+  };
 
   return (
     <label className={cn("flex h-8 items-center gap-1.5 rounded-lg border border-input bg-background px-2 text-xs focus-within:ring-2 focus-within:ring-ring/50", disabled && "opacity-50")}>
@@ -51,13 +67,19 @@ export function NumberField({
         step={step}
         disabled={disabled}
         onFocus={() => setDraft(String(rounded))}
-        onBlur={() => setDraft(null)}
+        onBlur={() => {
+          if (commitOnBlur) commit();
+          setDraft(null);
+        }}
+        onKeyDown={(e) => {
+          // Enter just leaves the field; onBlur applies the value exactly once.
+          if (commitOnBlur && e.key === "Enter") (e.target as HTMLInputElement).blur();
+        }}
         onChange={(e) => {
           setDraft(e.target.value);
-          const n = Number(e.target.value);
-          if (e.target.value !== "" && Number.isFinite(n)) {
-            onChange(Math.min(max ?? Infinity, Math.max(min ?? -Infinity, n)));
-          }
+          if (commitOnBlur) return;
+          const n = parse(e.target.value);
+          if (n !== null) onChange(n);
         }}
       />
       {suffix && <span className="shrink-0 text-muted-foreground">{suffix}</span>}

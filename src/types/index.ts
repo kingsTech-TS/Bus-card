@@ -76,6 +76,8 @@ export interface BaseElement {
   opacity?: number;
   isVisible?: boolean;
   isLocked?: boolean;
+  /** Elements sharing a groupId are selected, moved and copied together. */
+  groupId?: string | null;
 }
 
 export interface TextElement extends BaseElement {
@@ -147,6 +149,7 @@ export interface ElementPatch {
   opacity?: number;
   isVisible?: boolean;
   isLocked?: boolean;
+  groupId?: string | null;
   content?: string;
   fontSize?: number;
   fontFamily?: string;
@@ -179,6 +182,8 @@ export interface DesignSchema {
   elements: DesignElement[];
   /** Back side; absent on older single-sided cards. */
   back?: CardSideDesign | null;
+  /** Editor layout: which face is shown first in the workspace. */
+  face_order?: CardSide[];
   brand_kit?: {
     colors: string[];
     font_id?: string | null;

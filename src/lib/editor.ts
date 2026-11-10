@@ -107,7 +107,41 @@ function normalizeElements(list?: DesignElement[] | null): DesignElement[] {
     .map(({ el }, i) => normalizeElement(el, i));
 }
 
+function validOrder(order?: CardSide[] | null): CardSide[] {
+  return order?.length === 2 && order.includes("front") && order.includes("back") ? [...order] : ["front", "back"];
+}
+
+/** Which face is shown at each workspace position. */
+export function getFaceOrder(design: DesignSchema): CardSide[] {
+  return validOrder(design.face_order);
+}
+
+/** Swap the front and back content and flip the layout order, so each face keeps its place on screen. */
+export function swapFaces(design: DesignSchema): DesignSchema {
+  const front = getSide(design, "front");
+  const back = getSide(design, "back");
+  const [a, b] = getFaceOrder(design);
+  return {
+    ...design,
+    background: back.background,
+    elements: back.elements,
+    back: { background: front.background, elements: front.elements },
+    face_order: [b, a],
+  };
+}
+
 export function normalizeDesign(design?: Partial<DesignSchema> | null): DesignSchema {
+  const front = normalizeElements(design?.elements);
+  // Element ids must be unique across both faces (the workspace shows them together).
+  const seen = new Set(front.map((el) => el.id));
+  const back = normalizeElements(design?.back?.elements).map((el) => {
+    if (!seen.has(el.id)) {
+      seen.add(el.id);
+      return el;
+    }
+    return { ...el, id: genId() };
+  });
+
   return {
     ...DEFAULT_DESIGN,
     ...design,
@@ -115,11 +149,12 @@ export function normalizeDesign(design?: Partial<DesignSchema> | null): DesignSc
     height: design?.height || DEFAULT_DESIGN.height,
     background: design?.background || "#ffffff",
     bleed_area: design?.bleed_area ?? DEFAULT_BLEED,
-    elements: normalizeElements(design?.elements),
+    elements: front,
     back: {
       background: design?.back?.background || "#ffffff",
-      elements: normalizeElements(design?.back?.elements),
+      elements: back,
     },
+    face_order: validOrder(design?.face_order),
   };
 }
 
@@ -183,3 +218,63 @@ export function boundsOf(points: Point[]) {
 }
 
 export const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+
+/** Approximate unrotated box of an element in design units (text height is estimated from its lines). */
+export function elementBox(el: DesignElement) {
+  switch (el.type) {
+    case "draw":
+      return el.points.length ? boundsOf(el.points) : { x: el.x, y: el.y, width: 0, height: 0 };
+    case "line": {
+      const xs = el.points.filter((_, i) => i % 2 === 0);
+      const ys = el.points.filter((_, i) => i % 2 === 1);
+      const minX = Math.min(...xs, 0);
+      const minY = Math.min(...ys, 0);
+      return { x: el.x + minX, y: el.y + minY, width: Math.max(...xs, 0) - minX, height: Math.max(...ys, 0) - minY };
+    }
+    case "text": {
+      const lines = Math.max(1, (el.content || "").split("\n").length);
+      return { x: el.x, y: el.y, width: el.width ?? el.fontSize * 0.6 * (el.content?.length ?? 1), height: el.height ?? el.fontSize * 1.2 * lines };
+    }
+    default:
+      return { x: el.x, y: el.y, width: el.width ?? 100, height: el.height ?? 100 };
+  }
+}
+
+/** Combined box of several elements. */
+export function selectionBox(elements: DesignElement[]) {
+  if (!elements.length) return { x: 0, y: 0, width: 0, height: 0 };
+  const boxes = elements.map(elementBox);
+  const x = Math.min(...boxes.map((b) => b.x));
+  const y = Math.min(...boxes.map((b) => b.y));
+  return {
+    x,
+    y,
+    width: Math.max(...boxes.map((b) => b.x + b.width)) - x,
+    height: Math.max(...boxes.map((b) => b.y + b.height)) - y,
+  };
+}
+
+/** Scale an element by `f` about the point (ox, oy). */
+export function scaleElement(el: DesignElement, f: number, ox: number, oy: number): DesignElement {
+  const sx = (v: number) => ox + (v - ox) * f;
+  const sy = (v: number) => oy + (v - oy) * f;
+  switch (el.type) {
+    case "draw": {
+      const points = el.points.map((p) => ({ x: sx(p.x), y: sy(p.y) }));
+      return { ...el, points, strokeWidth: Math.max(1, el.strokeWidth * f), ...boundsOf(points) };
+    }
+    case "line":
+      return { ...el, x: sx(el.x), y: sy(el.y), points: el.points.map((v) => v * f), strokeWidth: Math.max(1, el.strokeWidth * f) };
+    case "text":
+      return {
+        ...el,
+        x: sx(el.x),
+        y: sy(el.y),
+        fontSize: Math.max(4, Math.round(el.fontSize * f)),
+        width: el.width !== undefined ? el.width * f : undefined,
+        height: el.height !== undefined ? el.height * f : undefined,
+      };
+    default:
+      return { ...el, x: sx(el.x), y: sy(el.y), width: Math.max(5, (el.width ?? 100) * f), height: Math.max(5, (el.height ?? 100) * f) };
+  }
+}

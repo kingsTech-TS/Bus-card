@@ -11,7 +11,7 @@ import Image from "next/image";
 export default function DashboardPage() {
   const { user } = useAuthStore();
   const { data: cards, isLoading: cardsLoading } = useCards();
-  const { data: stats, isLoading: statsLoading } = useAdminStats();
+  const { data: stats, isLoading: statsLoading } = useAdminStats(user?.role === "admin");
 
   const totalViews = cards?.reduce((acc, card) => acc + (card.views || 0), 0) || 0;
   const totalDownloads = cards?.reduce((acc, card) => acc + (card.downloads || 0), 0) || 0;
